@@ -46,7 +46,7 @@ void framebuffer_init(void) {
 
 	mailbox[2] = MAILBOX_TAG_SETPHYWH;
 	mailbox[3] = 8;
-	mailbox[4] = 0;
+	mailbox[4] = 8;
 	mailbox[5] = desired_width;
 	mailbox[6] = desired_height;
 
