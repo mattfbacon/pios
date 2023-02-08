@@ -1,7 +1,7 @@
 INCLUDE_DIR := include
 SRC_DIR := src
 
-SOURCES := boot.s kernel.c mailbox.c gpio.c framebuffer.c
+SOURCES := boot.s kernel.c mailbox.c gpio.c framebuffer.c sleep.c
 
 CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -iquote$(INCLUDE_DIR)
 TOOLCHAIN = aarch64-elf-
