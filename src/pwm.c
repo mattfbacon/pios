@@ -1,8 +1,9 @@
+#include "base.h"
 #include "clock.h"
 #include "pwm.h"
 
-static u32 volatile* const PWM0_BASE = (u32 volatile*)0xfe20c000;
-static u32 volatile* const PWM1_BASE = (u32 volatile*)0xfe20c800;
+static u32 volatile* const PWM0_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0xc000);
+static u32 volatile* const PWM1_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0xc800);
 
 enum {
 	CONTROL = 0,

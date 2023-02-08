@@ -1,8 +1,9 @@
+#include "base.h"
 #include "mailbox.h"
 
 u32 volatile __attribute__((aligned(16))) mailbox[36];
 
-static u32 volatile* const VIDEOCORE_MAILBOX = (u32 volatile*)0xfe00b880;
+static u32 volatile* const VIDEOCORE_MAILBOX = (u32 volatile*)(PERIPHERAL_BASE + 0xb880);
 enum {
 	MAILBOX_READ = 0,
 	MAILBOX_POLL = 4,

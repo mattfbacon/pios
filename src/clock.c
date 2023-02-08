@@ -1,6 +1,7 @@
+#include "base.h"
 #include "clock.h"
 
-static u32 volatile* const CLOCK_BASE = (u32 volatile*)0xfe101000;
+static u32 volatile* const CLOCK_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x101000);
 
 enum {
 	CLOCK_CONTROL = 0,

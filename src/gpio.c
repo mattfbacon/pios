@@ -1,6 +1,7 @@
+#include "base.h"
 #include "gpio.h"
 
-static u32 volatile* const GPIO_BASE = (u32 volatile*)0xfe200000;
+static u32 volatile* const GPIO_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x200000);
 
 enum {
 	MODE = 0,

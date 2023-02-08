@@ -1,7 +1,8 @@
+#include "base.h"
 #include "gpio.h"
 #include "uart.h"
 
-static u32 volatile* const AUX_BASE = (u32 volatile*)0xfe215000;
+static u32 volatile* const AUX_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x215000);
 
 enum {
 	TX_PIN = 14,
