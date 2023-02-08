@@ -1,8 +1,8 @@
+#include "clock.h"
 #include "pwm.h"
 
 static u32 volatile* const PWM0_BASE = (u32 volatile*)0xfe20c000;
 static u32 volatile* const PWM1_BASE = (u32 volatile*)0xfe20c800;
-static u32 volatile* const CLOCK_BASE = (u32 volatile*)0xfe101000;
 
 enum {
 	CONTROL = 0,
@@ -18,14 +18,6 @@ enum {
 
 	FIFO_FULL = 1,
 	ERROR_MASK = 0b100111100,
-
-	CLOCK_CONTROL = 40,
-	CLOCK_DIVISOR = 41,
-	CLOCK_PASSWORD = 0x5a000000,
-	CLOCK_BUSY = 1 << 7,
-	CLOCK_DISABLE = 1 << 5,
-	CLOCK_ENABLE = 1 << 4,
-	CLOCK_SOURCE_OSCILLATOR = 1,
 };
 
 static u32 volatile* controller_base(pwm_controller_t const controller) {
@@ -47,16 +39,7 @@ static u32 channel_shift(pwm_channel_t const channel) {
 }
 
 void pwm_init_clock(u32 const divisor) {
-	// clock must be disabled before its divisor can be changed
-	CLOCK_BASE[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_DISABLE;
-	while (CLOCK_BASE[CLOCK_CONTROL] & CLOCK_BUSY)
-		;
-
-	CLOCK_BASE[CLOCK_DIVISOR] = CLOCK_PASSWORD | (divisor << 12);
-
-	// datasheet says not to enable clock at the same time as setting the source
-	CLOCK_BASE[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_SOURCE_OSCILLATOR;
-	CLOCK_BASE[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_SOURCE_OSCILLATOR | CLOCK_ENABLE;
+	clock_init(clock_id_pwm, divisor);
 }
 
 void pwm_init_channel(pwm_controller_t const controller, pwm_channel_t const channel, pwm_channel_init_flags_t const flags) {
