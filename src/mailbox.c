@@ -1,8 +1,8 @@
 #include "mailbox.h"
 
-uint32_t volatile __attribute__((aligned(16))) mailbox[36];
+u32 volatile __attribute__((aligned(16))) mailbox[36];
 
-static uint32_t volatile* const VIDEOCORE_MAILBOX = (uint32_t volatile*)0xfe00b880;
+static u32 volatile* const VIDEOCORE_MAILBOX = (u32 volatile*)0xfe00b880;
 enum {
 	MAILBOX_READ = 0,
 	MAILBOX_POLL = 4,
@@ -17,7 +17,7 @@ enum {
 };
 
 bool mailbox_call(mailbox_channel_t const channel) {
-	uint32_t const command = (uint32_t)((uintptr_t)&mailbox) | (uint32_t)(channel & 0b1111);
+	u32 const command = (u32)(usize)&mailbox | (u32)(channel & 0b1111);
 
 	while (VIDEOCORE_MAILBOX[MAILBOX_STATUS] & MAILBOX_FULL)
 		;

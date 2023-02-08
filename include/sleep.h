@@ -1,4 +1,4 @@
 #pragma once
 
-void sleep_cycles(unsigned long cycles);
-void sleep_micros(unsigned long micros);
+void sleep_cycles(u64 cycles);
+void sleep_micros(u64 micros);

@@ -1,0 +1,8 @@
+-Wall
+-Wextra
+-std=c17
+-Iinclude
+-includeinclude/common.h
+-nostdlib
+-nostdinc
+-ffreestanding

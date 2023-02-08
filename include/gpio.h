@@ -1,10 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-typedef unsigned int gpio_pin_t;
+typedef u8 gpio_pin_t;
 
 typedef enum gpio_mode {
 	gpio_mode_input = 0,

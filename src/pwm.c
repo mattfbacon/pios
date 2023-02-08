@@ -1,8 +1,8 @@
 #include "pwm.h"
 
-static uint32_t volatile* const PWM0_BASE = (uint32_t volatile*)0xfe20c000;
-static uint32_t volatile* const PWM1_BASE = (uint32_t volatile*)0xfe20c800;
-static uint32_t volatile* const CLOCK_BASE = (uint32_t volatile*)0xfe101000;
+static u32 volatile* const PWM0_BASE = (u32 volatile*)0xfe20c000;
+static u32 volatile* const PWM1_BASE = (u32 volatile*)0xfe20c800;
+static u32 volatile* const CLOCK_BASE = (u32 volatile*)0xfe101000;
 
 enum {
 	CONTROL = 0,
@@ -28,7 +28,7 @@ enum {
 	CLOCK_SOURCE_OSCILLATOR = 1,
 };
 
-static uint32_t volatile* controller_base(pwm_controller_t const controller) {
+static u32 volatile* controller_base(pwm_controller_t const controller) {
 	switch (controller) {
 		case pwm_controller_0:
 			return PWM0_BASE;
@@ -37,7 +37,7 @@ static uint32_t volatile* controller_base(pwm_controller_t const controller) {
 	}
 }
 
-static uint32_t channel_shift(pwm_channel_t const channel) {
+static u32 channel_shift(pwm_channel_t const channel) {
 	switch (channel) {
 		case pwm_channel_0:
 			return 0;
@@ -46,7 +46,7 @@ static uint32_t channel_shift(pwm_channel_t const channel) {
 	}
 }
 
-void pwm_init_clock(uint32_t const divisor) {
+void pwm_init_clock(u32 const divisor) {
 	// clock must be disabled before its divisor can be changed
 	CLOCK_BASE[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_DISABLE;
 	while (CLOCK_BASE[CLOCK_CONTROL] & CLOCK_BUSY)
@@ -60,9 +60,9 @@ void pwm_init_clock(uint32_t const divisor) {
 }
 
 void pwm_init_channel(pwm_controller_t const controller, pwm_channel_t const channel, pwm_channel_init_flags_t const flags) {
-	uint32_t const shift = channel_shift(channel);
-	uint32_t volatile* const reg = &controller_base(controller)[CONTROL];
-	uint32_t value = *reg;
+	u32 const shift = channel_shift(channel);
+	u32 volatile* const reg = &controller_base(controller)[CONTROL];
+	u32 value = *reg;
 	value &= ~(CONTROL_MASK << shift);
 	value |= flags << shift;
 	*reg = value;
@@ -72,8 +72,8 @@ void pwm_fifo_clear(pwm_controller_t const controller) {
 	controller_base(controller)[CONTROL] |= CLEAR_FIFO;
 }
 
-void pwm_fifo_write(pwm_controller_t const controller, uint32_t const value) {
-	uint32_t volatile* const reg = controller_base(controller);
+void pwm_fifo_write(pwm_controller_t const controller, u32 const value) {
+	u32 volatile* const reg = controller_base(controller);
 
 	// wait for room
 	while (reg[STATUS] & FIFO_FULL) {
@@ -89,10 +89,10 @@ void pwm_fifo_write(pwm_controller_t const controller, uint32_t const value) {
 	}
 }
 
-void pwm_set_range(pwm_controller_t const controller, pwm_channel_t const channel, uint32_t const range) {
+void pwm_set_range(pwm_controller_t const controller, pwm_channel_t const channel, u32 const range) {
 	controller_base(controller)[CHANNEL0_RANGE + (channel * (CHANNEL1_RANGE - CHANNEL0_RANGE))] = range;
 }
 
-void pwm_set_data(pwm_controller_t const controller, pwm_channel_t const channel, uint32_t const data) {
+void pwm_set_data(pwm_controller_t const controller, pwm_channel_t const channel, u32 const data) {
 	controller_base(controller)[CHANNEL0_DATA + (channel * (CHANNEL1_DATA - CHANNEL0_DATA))] = data;
 }

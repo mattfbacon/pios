@@ -1,10 +1,7 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stdint.h>
+typedef u8 mailbox_channel_t;
 
-typedef uint8_t mailbox_channel_t;
-
-extern uint32_t volatile mailbox[36];
+extern u32 volatile mailbox[36];
 
 bool mailbox_call(mailbox_channel_t const channel);

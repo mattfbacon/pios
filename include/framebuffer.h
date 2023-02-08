@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-
-typedef uint32_t framebuffer_color_t;
+typedef u32 framebuffer_color_t;
 
 void framebuffer_init(void);
 void framebuffer_draw_pixel(unsigned int x, unsigned int y, framebuffer_color_t color);

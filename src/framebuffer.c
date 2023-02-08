@@ -29,17 +29,17 @@ enum {
 };
 
 struct framebuffer {
-	uint32_t width;
-	uint32_t height;
-	uint32_t stride;
+	u32 width;
+	u32 height;
+	u32 stride;
 	framebuffer_color_t volatile* buffer;
 };
 
 static struct framebuffer framebuffer = {};
 
 void framebuffer_init(void) {
-	uint32_t const desired_width = 1920;
-	uint32_t const desired_height = 1080;
+	u32 const desired_width = 1920;
+	u32 const desired_height = 1080;
 
 	mailbox[0] = 35 * 4;
 	mailbox[1] = MAILBOX_REQUEST;
@@ -91,18 +91,18 @@ void framebuffer_init(void) {
 		framebuffer.height = mailbox[11];
 		framebuffer.stride = mailbox[33] / sizeof(framebuffer_color_t);  // XXX will stride ever not be a multiple of 4??
 		// convert GPU address to ARM address
-		framebuffer.buffer = (framebuffer_color_t volatile*)(uintptr_t)(mailbox[28] & 0x3fffffff);
+		framebuffer.buffer = (framebuffer_color_t volatile*)(usize)(mailbox[28] & 0x3fffffff);
 	}
 }
 
-void framebuffer_draw_pixel(unsigned int const x, unsigned int const y, framebuffer_color_t const color) {
+void framebuffer_draw_pixel(u32 const x, u32 const y, framebuffer_color_t const color) {
 	if (y > framebuffer.height || x > framebuffer.width) {
 		return;
 	}
 	framebuffer.buffer[y * framebuffer.stride + x] = color;
 }
 
-framebuffer_color_t framebuffer_current(unsigned int const x, unsigned int const y) {
+framebuffer_color_t framebuffer_current(u32 const x, u32 const y) {
 	if (y > framebuffer.height || x > framebuffer.width) {
 		return 0;
 	}
@@ -110,8 +110,8 @@ framebuffer_color_t framebuffer_current(unsigned int const x, unsigned int const
 }
 
 void framebuffer_fill(framebuffer_color_t const color) {
-	for (uint32_t y = 0; y < framebuffer.height; ++y) {
-		for (uint32_t x = 0; x < framebuffer.width; ++x) {
+	for (u32 y = 0; y < framebuffer.height; ++y) {
+		for (u32 x = 0; x < framebuffer.width; ++x) {
 			framebuffer.buffer[y * framebuffer.stride + x] = color;
 		}
 	}
