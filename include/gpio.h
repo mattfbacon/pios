@@ -10,6 +10,10 @@ typedef enum gpio_mode {
 	gpio_mode_input = 0,
 	gpio_mode_output = 1,
 	gpio_mode_alt0 = 4,
+	gpio_mode_alt1 = 5,
+	gpio_mode_alt2 = 6,
+	gpio_mode_alt3 = 7,
+	gpio_mode_alt4 = 3,
 	gpio_mode_alt5 = 2,
 } gpio_mode_t;
 
