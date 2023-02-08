@@ -1,3 +1,3 @@
-void kernel_main(void) {
+void main(void) {
 	// your imagination here
 }

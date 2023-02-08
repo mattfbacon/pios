@@ -6,7 +6,7 @@ static u32 g(u32 const i, u32 const x, u32 const t, u32 const o) {
 	return ((3 & x & (i * ((3 & i >> 16 ? "BY}6YB6$" : "Qj}6jQ6%")[t % 8] + 51) >> o)) << 4);
 }
 
-void kernel_main(void) {
+void main(void) {
 	// we use the ACT LED (the green one on the board) as a status indicator
 	gpio_pin_t const act_led = 42;
 	gpio_set_mode(act_led, gpio_mode_output);

@@ -1,7 +1,7 @@
 #include "string.h"
 #include "uart.h"
 
-void kernel_main(void) {
+void main(void) {
 	uart_init();
 
 	while (true) {

@@ -11,7 +11,7 @@ static u32 const SIN_DISCRETE[]
 	    578, 563, 547, 531, 516, 500, 484, 469, 453, 437, 422, 406, 391,  376,  361,  345, 331, 316, 301, 287, 273, 259, 245, 232, 219, 206, 194, 181, 169,
 	    158, 146, 136, 125, 115, 105, 95,  86,  78,  70,  62,  54,  48,   41,   35,   30,  24,  20,  16,  12,  9,   6,   4,   2,   1,   0 };
 
-void kernel_main(void) {
+void main(void) {
 	gpio_pin_t const pwm_pin = 13;
 	gpio_set_pull(pwm_pin, gpio_pull_floating);
 	gpio_set_mode(pwm_pin, gpio_mode_alt0);

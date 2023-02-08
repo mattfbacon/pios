@@ -23,7 +23,7 @@ _start:
 	bne .loop
 .endloop:
 
-	bl kernel_main
+	bl main
 
 halt:
 	wfe
