@@ -18,6 +18,9 @@ $(BUILD_DIR)/%.s.o: $(SRC_DIR)/%.s | $(BUILD_DIR)/
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)/
 	$(TOOLCHAIN)gcc $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/%.bin.o: %.bin | $(BUILD_DIR)/
+	$(TOOLCHAIN)objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@
+
 $(BUILD_DIR)/kernel8.elf: linker.ld $(patsubst %,$(BUILD_DIR)/%.o,$(SOURCES)) | $(BUILD_DIR)/
 	$(TOOLCHAIN)ld -nostdlib -T $^ -o $@
 
