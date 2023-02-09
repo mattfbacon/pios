@@ -1,9 +1,5 @@
 #pragma once
 
-typedef _Bool bool;
-#define true ((bool)1)
-#define false ((bool)0)
-
 typedef unsigned char u8;
 typedef signed char i8;
 typedef unsigned short u16;
