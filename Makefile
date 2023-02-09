@@ -2,7 +2,7 @@ INCLUDE_DIR := include
 SRC_DIR := src
 BUILD_DIR := target
 
-SOURCES := boot.s main.c mailbox.c gpio.c framebuffer.c sleep.c pwm.c clock.c uart.c string.c
+SOURCES := boot.s main.c mailbox.c gpio.c framebuffer.c sleep.c pwm.c clock.c uart.c string.c i2c.c
 
 CFLAGS := -Wall -Wextra -O2 -std=gnu2x -ffreestanding -nostdinc -iquote$(INCLUDE_DIR) -include$(INCLUDE_DIR)/common.h
 
