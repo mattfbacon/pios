@@ -3,7 +3,7 @@ SRC_DIR := src
 
 SOURCES := boot.s main.c mailbox.c gpio.c framebuffer.c sleep.c pwm.c clock.c uart.c string.c
 
-CFLAGS = -Wall -Wextra -O2 -ffreestanding -nostdlib -nostartfiles -iquote$(INCLUDE_DIR) -include$(INCLUDE_DIR)/common.h
+CFLAGS = -Wall -Wextra -O2 -std=c2x -ffreestanding -nostdlib -nostartfiles -iquote$(INCLUDE_DIR) -include$(INCLUDE_DIR)/common.h
 TOOLCHAIN = aarch64-elf-
 BUILD_DIR := target
 
