@@ -7,9 +7,9 @@ void sleep_cycles(u64 cycles) {
 }
 
 static u32 counter_timer_frequency(void) {
-	u32 ret;
+	u64 ret;
 	asm volatile("mrs %0, cntfrq_el0" : "=r"(ret));
-	return ret;
+	return (u32)ret;
 }
 
 static u64 counter_timer_count(void) {
