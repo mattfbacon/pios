@@ -1,30 +1,38 @@
 #include "base.h"
 #include "gpio.h"
+#include "mailbox.h"
 #include "uart.h"
 
-static u32 volatile* const AUX_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x215000);
+// for uart0
+static u32 volatile* const BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x201000);
 
 enum {
 	TX_PIN = 14,
 	RX_PIN = 15,
 
-	ENABLES = 1,
-	ENABLE_UART = 1 << 0,
+	FIFO = 0,
 
-	CONTROL = 24,
-	RECEIVER_ENABLE = 1 << 0,
-	TRANSMITTER_ENABLE = 1 << 1,
+	STATUS = 6,
+	TRANSMIT_FIFO_FULL = 1 << 5,
+	RECEIVE_FIFO_EMPTY = 1 << 4,
 
-	BAUD = 26,
+	BAUD_INTEGER = 9,
+	BAUD_FRACTION = 10,
 
-	LINE_CONTROL = 19,
-	MODE_8BIT = 1 << 0,
+	LINE_CONTROL = 11,
+	ENABLE_FIFOS = 1 << 4,
+	WORD_LENGTH_8BIT = 1 << 5 | 1 << 6,
 
-	LINE_STATUS = 21,
-	TRANSMIT_FIFO_NOT_FULL = 1 << 5,
-	RECEIVE_FIFO_NOT_EMPTY = 1 << 0,
+	CONTROL = 12,
+	ENABLE_DEVICE = 1 << 0,
+	ENABLE_TRANSMIT = 1 << 8,
+	ENABLE_RECEIVE = 1 << 9,
 
-	FIFO = 16,
+	INTERRUPT_MASK = 14,
+	MASK_ALL = ~0,
+
+	INTERRUPT_CONTROL = 17,
+	CLEAR_INTERRUPTS = 0x7ff,
 };
 
 u32 div_rounded(u32 const dividend, u32 const divisor) {
@@ -37,38 +45,50 @@ u32 baud_to_reg_value(u32 const baud) {
 }
 
 void uart_init(void) {
-	gpio_set_mode(TX_PIN, gpio_mode_alt5);
-	gpio_set_pull(TX_PIN, gpio_pull_down);
+	gpio_set_mode(TX_PIN, gpio_mode_alt0);
+	gpio_set_pull(TX_PIN, gpio_pull_floating);
+	gpio_set_mode(RX_PIN, gpio_mode_alt0);
+	gpio_set_pull(RX_PIN, gpio_pull_floating);
 
-	gpio_set_mode(RX_PIN, gpio_mode_alt5);
-	gpio_set_pull(RX_PIN, gpio_pull_down);
+	BASE[CONTROL] = 0;
+	BASE[INTERRUPT_CONTROL] = CLEAR_INTERRUPTS;
 
-	AUX_BASE[ENABLES] |= ENABLE_UART;
+	// set uart clock to 3 mhz
+	mailbox[0] = 9 * 4;
+	mailbox[1] = 0;
+	mailbox[2] = 0x38002;
+	mailbox[3] = 12;
+	mailbox[4] = 8;
+	mailbox[5] = 2;
+	mailbox[6] = 3'000'000;
+	mailbox[7] = 0;
+	mailbox[8] = 0;
+	mailbox_call(8);
 
-	// temporarily disable for setup
-	AUX_BASE[CONTROL] = 0;
+	BASE[BAUD_INTEGER] = 1;
+	BASE[BAUD_FRACTION] = 40;
 
-	AUX_BASE[BAUD] = baud_to_reg_value(115200);
+	BASE[LINE_CONTROL] = ENABLE_FIFOS | WORD_LENGTH_8BIT;
 
-	AUX_BASE[LINE_CONTROL] = MODE_8BIT;
+	BASE[INTERRUPT_MASK] = MASK_ALL;
 
-	AUX_BASE[CONTROL] = RECEIVER_ENABLE | TRANSMITTER_ENABLE;
+	BASE[CONTROL] = ENABLE_DEVICE | ENABLE_RECEIVE | ENABLE_TRANSMIT;
 }
 
 void uart_send(u8 const ch) {
-	while (!(AUX_BASE[LINE_STATUS] & TRANSMIT_FIFO_NOT_FULL)) {
+	while (BASE[STATUS] & TRANSMIT_FIFO_FULL) {
 		asm volatile("isb");
 	}
 
-	AUX_BASE[FIFO] = ch;
+	BASE[FIFO] = ch;
 }
 
 u8 uart_recv(void) {
-	while (!(AUX_BASE[LINE_STATUS] & RECEIVE_FIFO_NOT_EMPTY)) {
+	while (BASE[STATUS] & RECEIVE_FIFO_EMPTY) {
 		asm volatile("isb");
 	}
 
-	return AUX_BASE[FIFO];
+	return BASE[FIFO];
 }
 
 void uart_send_str(char const* str) {
