@@ -2,7 +2,7 @@ INCLUDE_DIR := include
 SRC_DIR := src
 BUILD_DIR := target
 
-SOURCES := boot.s main.c mailbox.c gpio.c framebuffer.c sleep.c pwm.c clock.c uart.c string.c i2c.c init.c
+SOURCES := boot.s main.c mailbox.c gpio.c framebuffer.c sleep.c pwm.c clock.c uart.c string.c i2c.c init.c devices/mcp23017.c
 
 CFLAGS := -Wall -Wextra -O2 -std=gnu2x -ffreestanding -nostdinc -iquote$(INCLUDE_DIR) -include$(INCLUDE_DIR)/common.h
 
@@ -12,22 +12,24 @@ LD := ld.lld -m aarch64linux
 
 .DEFAULT_GOAL := $(BUILD_DIR)/kernel8.img
 
-$(BUILD_DIR)/:
-	mkdir -p $@
-
-$(BUILD_DIR)/%.s.o: $(SRC_DIR)/%.s | $(BUILD_DIR)/
+$(BUILD_DIR)/%.s.o: $(SRC_DIR)/%.s
+	mkdir -p $(shell dirname $@)
 	$(CC) -c $< -o $@
 
-$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)/
+$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
+	mkdir -p $(shell dirname $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.bin.o: %.bin | $(BUILD_DIR)/
+$(BUILD_DIR)/%.bin.o: %.bin
+	mkdir -p $(shell dirname $@)
 	$(OBJCOPY) -I binary -O elf64-littleaarch64 -B aarch64 $< $@
 
-$(BUILD_DIR)/kernel8.elf: linker.ld $(patsubst %,$(BUILD_DIR)/%.o,$(SOURCES)) | $(BUILD_DIR)/
+$(BUILD_DIR)/kernel8.elf: linker.ld $(patsubst %,$(BUILD_DIR)/%.o,$(SOURCES))
+	mkdir -p $(shell dirname $@)
 	$(LD) -T $^ -o $@
 
 $(BUILD_DIR)/kernel8.img: $(BUILD_DIR)/kernel8.elf | $(BUILD_DIR)/
+	mkdir -p $(shell dirname $@)
 	$(OBJCOPY) -O binary $< $@
 
 .PHONY: clean
