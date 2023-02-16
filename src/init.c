@@ -3,6 +3,7 @@
 
 void standard_init(void) {
 	uart_init();
+	uart_send_str("\e[2J\e[H");
 
 	gpio_set_mode(42, gpio_mode_output);
 	gpio_write(42, true);
