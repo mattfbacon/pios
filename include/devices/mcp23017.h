@@ -4,6 +4,10 @@
 
 typedef u8 mcp23017_pin_t;
 
+enum {
+	MCP23017_ADDRESS = 0x20,
+};
+
 // returns true on success, false on failure.
 bool mcp23017_init(i2c_address_t address);
 
@@ -19,7 +23,13 @@ bool mcp23017_set_mode(i2c_address_t address, mcp23017_pin_t pin, mcp23017_mode_
 bool mcp23017_write(i2c_address_t address, mcp23017_pin_t pin, bool value);
 
 // returns true on success, false on failure.
+bool mcp23017_write_all(i2c_address_t address, u16 value);
+
+// returns true on success, false on failure.
 bool mcp23017_read(i2c_address_t address, mcp23017_pin_t pin, bool* ret);
+
+// returns true on success, false on failure.
+bool mcp23017_read_all(i2c_address_t address, u16* ret);
 
 // the MCP23017 only supports pull-up.
 typedef enum mcp23017_pull {
