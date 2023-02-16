@@ -1,6 +1,7 @@
 #include "base.h"
 #include "gpio.h"
 #include "mailbox.h"
+#include "printf.h"
 #include "uart.h"
 
 // for uart0
@@ -75,7 +76,7 @@ void uart_init(void) {
 	BASE[CONTROL] = ENABLE_DEVICE | ENABLE_RECEIVE | ENABLE_TRANSMIT;
 }
 
-void uart_send(u8 const ch) {
+void uart_send(char const ch) {
 	while (BASE[STATUS] & TRANSMIT_FIFO_FULL) {
 		asm volatile("isb");
 	}
@@ -95,4 +96,10 @@ void uart_send_str(char const* str) {
 	for (; *str != '\0'; ++str) {
 		uart_send(*str);
 	}
+}
+
+void uart_printf(char const* fmt, ...) {
+	__builtin_va_list args;
+	__builtin_va_start(args, fmt);
+	vdprintf(uart_send, fmt, args);
 }
