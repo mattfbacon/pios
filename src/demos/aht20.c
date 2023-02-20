@@ -9,8 +9,6 @@ static void print_sensor_data(aht20_data_t const data) {
 }
 
 void main(void) {
-	standard_init();
-
 	uart_send_str("initializing i2c\r\n");
 	i2c_init(i2c_speed_standard);
 

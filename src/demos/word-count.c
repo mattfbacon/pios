@@ -3,8 +3,6 @@
 #include "uart.h"
 
 void main(void) {
-	uart_init();
-
 	gpio_set_mode(42, gpio_mode_output);
 	gpio_write(42, true);
 

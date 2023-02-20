@@ -4,8 +4,6 @@
 #include "sleep.h"
 
 void main(void) {
-	standard_init();
-
 	i2c_init(i2c_speed_standard);
 
 	lcd_init();

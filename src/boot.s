@@ -1,6 +1,8 @@
 .section ".text.boot"
 
 .global _start
+.extern standard_init
+.extern main
 
 _start:
 	// start stack below our code
@@ -17,6 +19,7 @@ _start:
 	bne .loop
 .endloop:
 
+	bl standard_init
 	bl main
 
 .halt:
