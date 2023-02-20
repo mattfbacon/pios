@@ -11,3 +11,5 @@ dtparam=audio=on
 dtoverlay=vc4-kms-v3d
 max_framebuffers=2
 disable_splash=0
+
+armstub=armstub.img
