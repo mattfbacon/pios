@@ -1,8 +1,9 @@
 -Wall
 -Wextra
--std=c2x
--Iinclude
--includeinclude/common.h
--nostdlib
--nostdinc
+-O2
+-std=gnu2x
 -ffreestanding
+-nostdinc
+-mcpu=cortex-a72
+-iquoteinclude
+-includeinclude/common.h
