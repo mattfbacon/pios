@@ -13,3 +13,5 @@ typedef double f64;
 
 typedef u64 usize;
 typedef i64 isize;
+
+#define NULL ((void*)0)
