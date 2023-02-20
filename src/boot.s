@@ -3,12 +3,6 @@
 .global _start
 
 _start:
-	// get processor ID
-	mrs x4, mpidr_el1
-	ands x4, x4, #3
-	// != 0
-	bne halt
-
 	// start stack below our code
 	ldr x4, =_start
 	mov sp, x4
@@ -25,6 +19,6 @@ _start:
 
 	bl main
 
-halt:
+.halt:
 	wfe
-	b halt
+	b .halt
