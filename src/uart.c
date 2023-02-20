@@ -98,8 +98,12 @@ void uart_send_str(char const* str) {
 	}
 }
 
+static void printf_callback(void*, char const ch) {
+	uart_send(ch);
+}
+
 void uart_printf(char const* fmt, ...) {
 	__builtin_va_list args;
 	__builtin_va_start(args, fmt);
-	vdprintf(uart_send, fmt, args);
+	vdprintf(printf_callback, NULL, fmt, args);
 }
