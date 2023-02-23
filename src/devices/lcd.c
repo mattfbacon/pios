@@ -36,6 +36,8 @@ enum {
 	PIN_BUTTON_LEFT = 4,
 };
 
+static mcp23017_pin_t const data_pins[] = { PIN_DATA0, PIN_DATA1, PIN_DATA2, PIN_DATA3 };
+
 static mcp23017_pin_t const outputs[] = {
 	PIN_BACKLIGHT_RED, PIN_BACKLIGHT_GREEN, PIN_BACKLIGHT_BLUE, PIN_REG_SELECT, PIN_READ_WRITE, PIN_ENABLE, PIN_DATA0, PIN_DATA1, PIN_DATA2, PIN_DATA3,
 };
@@ -72,6 +74,7 @@ enum {
 	COMMAND_SET_DDRAM_ADDRESS = 0x80,
 
 	BUTTON_MASK = 0b11111,
+	BACKLIGHT_MASK = (1 << PIN_BACKLIGHT_RED) | (1 << PIN_BACKLIGHT_GREEN) | (1 << PIN_BACKLIGHT_BLUE),
 };
 
 static mcp23017_device_t device;
@@ -86,6 +89,10 @@ static void set_pull(mcp23017_pin_t const pin, mcp23017_pull_t const pull) {
 
 static void write(mcp23017_pin_t const pin, bool const value) {
 	mcp23017_write(&device, pin, value);
+}
+
+static void write_all(u16 const values) {
+	mcp23017_write_all(&device, values);
 }
 
 static bool read(mcp23017_pin_t const pin) {
@@ -108,11 +115,18 @@ static void pulse_enable(void) {
 }
 
 static void send4(u8 const value) {
-	write(PIN_DATA0, value & (1 << 0));
-	write(PIN_DATA1, value & (1 << 1));
-	write(PIN_DATA2, value & (1 << 2));
-	write(PIN_DATA3, value & (1 << 3));
-	sleep_micros(150);
+	u16 outputs = (((u16)device.outputs[1]) << 8) | (u16)device.outputs[0];
+
+	for (u16 i = 0; i < 4; ++i) {
+		u16 const pin = data_pins[i];
+		u16 const output_bit = 1 << pin;
+		outputs &= ~output_bit;
+		outputs |= (u16)(bool)(value & (1 << i)) << pin;
+	}
+
+	write_all(outputs);
+
+	sleep_micros(100);
 	pulse_enable();
 }
 
@@ -133,7 +147,7 @@ static void wait_until_not_busy(void) {
 			break;
 		}
 
-		sleep_micros(1'000);
+		sleep_micros(10);
 	}
 	set_mode(PIN_BUSY, mcp23017_mode_output);
 }
@@ -192,9 +206,11 @@ void lcd_init() {
 }
 
 void lcd_set_backlight(bool const red, bool const green, bool const blue) {
-	write(PIN_BACKLIGHT_RED, !red);
-	write(PIN_BACKLIGHT_GREEN, !green);
-	write(PIN_BACKLIGHT_BLUE, !blue);
+	// this is less for optimization and more for avoiding flickering when setting the backlight
+	u16 pins = (u16)device.outputs[1] << 8 | device.outputs[0];
+	pins &= ~BACKLIGHT_MASK;
+	pins |= (u16)(!red) << PIN_BACKLIGHT_RED | (u16)(!green) << PIN_BACKLIGHT_GREEN | (u16)(!blue) << PIN_BACKLIGHT_BLUE;
+	write_all(pins);
 }
 
 void lcd_clear(void) {
