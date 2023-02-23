@@ -10,6 +10,7 @@ KERNEL_SOURCES := \
 	devices/mcp23017.c \
 	framebuffer.c \
 	gpio.c \
+	halt.c \
 	i2c.c \
 	init.c \
 	mailbox.c \

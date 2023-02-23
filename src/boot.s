@@ -88,7 +88,4 @@ _start:
 
 	bl standard_init
 	bl main
-
-.halt:
-	wfe
-	b .halt
+	b halt

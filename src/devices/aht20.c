@@ -1,4 +1,5 @@
 #include "devices/aht20.h"
+#include "halt.h"
 #include "i2c.h"
 #include "init.h"
 #include "sleep.h"
@@ -20,9 +21,7 @@ static void fail(char const* const why) {
 	uart_send_str("failed: ");
 	uart_send_str(why);
 	uart_send_str("\r\n");
-	while (true) {
-		asm volatile("wfe");
-	}
+	halt();
 }
 
 static void assert(bool const cond, char const* const msg) {
