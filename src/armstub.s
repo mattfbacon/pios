@@ -38,7 +38,7 @@
 _start:
 	// LOCAL_CONTROL:
 	// Bit 9 clear: Increment by 1 (vs. 2).
-	// Bit 8 clear: Timer source is 19.2MHz crystal (vs. APB).
+	// Bit 8 clear: Timer source is 54MHz crystal (vs. APB).
 	ldr x0, =LOCAL_CONTROL
 	str wzr, [x0]
 	// LOCAL_PRESCALER; divide-by (0x80000000 / register_val) == 1
