@@ -30,7 +30,7 @@
 
 .equ GICC_CTRLR, 0x0
 .equ GICC_PMR, 0x4
-.equ INTERRUPT_NUMBER, 0x8 // Number of interrupt enable registers (256 total irqs)
+.equ INTERRUPT_NUMBER, 0x8  // Number of interrupt enable registers (256 total irqs)
 .equ GICD_CTRLR, 0x0
 .equ GICD_IGROUPR, 0x80
 
@@ -151,23 +151,23 @@ kernel_entry32:
 
 .org 0x100
 
-setup_gic: // Called from secure mode - set all interrupts to group 1 and enable.
+setup_gic:  // Called from secure mode - set all interrupts to group 1 and enable.
 	mrs x0, MPIDR_EL1
 	ldr x2, =GIC_DISTB
 	tst x0, #0x3
-	b.eq 2f // primary core
+	b.eq 2f  // primary core
 
-	mov w0, #3 // Enable group 0 and 1 IRQs from distributor
+	mov w0, #3  // Enable group 0 and 1 IRQs from distributor
 	str w0, [x2, #GICD_CTRLR]
 2:
 	add x1, x2, #(GIC_CPUB - GIC_DISTB)
 	mov w0, #0x1e7
-	str w0, [x1, #GICC_CTRLR] // Enable group 1 IRQs from CPU interface
+	str w0, [x1, #GICC_CTRLR]  // Enable group 1 IRQs from CPU interface
 	mov w0, #0xff
-	str w0, [x1, #GICC_PMR] // priority mask
+	str w0, [x1, #GICC_PMR]  // priority mask
 	add x2, x2, #GICD_IGROUPR
 	mov x0, #(INTERRUPT_NUMBER * 4)
-	mov w1, #~0 // group 1 all the things
+	mov w1, #~0  // group 1 all the things
 3:
 	subs x0, x0, #4
 	str w1, [x2, x0]
