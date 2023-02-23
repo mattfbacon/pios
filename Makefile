@@ -8,6 +8,8 @@ KERNEL_SOURCES := \
 	devices/aht20.c \
 	devices/lcd.c \
 	devices/mcp23017.c \
+	exception.c \
+	exception.s \
 	framebuffer.c \
 	gpio.c \
 	halt.c \
@@ -19,6 +21,7 @@ KERNEL_SOURCES := \
 	pwm.c \
 	sleep.c \
 	string.c \
+	timer.c \
 	uart.c \
 
 ARMSTUB_SOURCES := armstub.s

@@ -1,7 +1,18 @@
+// # Implementation Notes
+//
+// The UART peripheral does provide interrupt-based operation.
+// However, in FIFO mode the "can transmit" and "can receive" interrupts can only be triggered when the FIFO is 1/8 full at the lowest.
+// For interrupt-based operation to work for us it would need to send an interrupt when any data can be transmitted/received.
+// Note that if the FIFO is disabled the interrupts are triggered how we would like. However, the data loss is not acceptable.
+// Instead, we use `sleep_micros` and are careful to use interrupt-based, rather than spin-based, sleeping.
+//
+// TODO explore disabling the hardware FIFO and using an interrupt handler + software FIFO to provide this behavior.
+
 #include "base.h"
 #include "gpio.h"
 #include "mailbox.h"
 #include "printf.h"
+#include "sleep.h"
 #include "uart.h"
 
 // for uart0
@@ -29,8 +40,13 @@ enum {
 	ENABLE_TRANSMIT = 1 << 8,
 	ENABLE_RECEIVE = 1 << 9,
 
-	INTERRUPT_MASK = 14,
-	MASK_ALL = ~0,
+	INTERRUPT_FIFO_LEVEL = 13,
+	LEVEL_RECEIVE_1_8 = 0,
+	LEVEL_TRANSMIT_1_8 = 0,
+
+	INTERRUPT_ENABLE = 14,
+	INTERRUPT_RECEIVE = 1 << 4,
+	INTERRUPT_TRANSMIT = 1 << 5,
 
 	INTERRUPT_CONTROL = 17,
 	CLEAR_INTERRUPTS = 0x7ff,
@@ -71,7 +87,7 @@ void uart_init(void) {
 
 	BASE[LINE_CONTROL] = ENABLE_FIFOS | WORD_LENGTH_8BIT;
 
-	BASE[INTERRUPT_MASK] = MASK_ALL;
+	BASE[INTERRUPT_ENABLE] = 0;
 
 	BASE[CONTROL] = ENABLE_DEVICE | ENABLE_RECEIVE | ENABLE_TRANSMIT;
 }
@@ -82,7 +98,7 @@ bool uart_can_send(void) {
 
 void uart_send(char const ch) {
 	while (!uart_can_send()) {
-		asm volatile("isb");
+		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
 
 	BASE[FIFO] = ch;
@@ -94,7 +110,7 @@ bool uart_can_recv(void) {
 
 u8 uart_recv(void) {
 	while (!uart_can_recv()) {
-		asm volatile("isb");
+		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
 
 	return BASE[FIFO];

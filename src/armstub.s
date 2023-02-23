@@ -74,7 +74,8 @@ _start:
 	mov x0, #CPUECTLR_EL1_SMPEN
 	msr S3_1_C15_C2_1, x0
 
-	bl setup_gic
+	// bl setup_gic
+
 	/*
 	 * Set up SCTLR_EL2
 	 * All set bits below are res1. LE, no WXN/I/SA/C/A/M

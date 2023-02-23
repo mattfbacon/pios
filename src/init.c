@@ -1,7 +1,10 @@
+#include "exception.h"
 #include "gpio.h"
 #include "uart.h"
 
 void standard_init(void) {
+	exception_init();
+
 	uart_init();
 	uart_send_str("\e[2J\e[H");
 

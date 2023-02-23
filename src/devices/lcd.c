@@ -147,7 +147,7 @@ static void wait_until_not_busy(void) {
 			break;
 		}
 
-		sleep_micros(10);
+		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
 	set_mode(PIN_BUSY, mcp23017_mode_output);
 }
