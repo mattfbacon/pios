@@ -51,6 +51,7 @@ bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
 			buf[amount_read] = BASE->fifo;
 			++amount_read;
 		}
+		asm volatile("isb");
 	}
 
 	u32 const status = BASE->status;
@@ -73,6 +74,7 @@ bool i2c_send(i2c_address_t const address, u8 const* const buf, u32 const len) {
 			BASE->fifo = buf[written];
 			++written;
 		}
+		asm volatile("isb");
 	}
 
 	u32 const status = BASE->status;
