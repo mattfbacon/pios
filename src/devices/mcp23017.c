@@ -48,6 +48,11 @@ static bool write_u8(i2c_address_t const address, u8 const reg, u8 const value) 
 	return i2c_send(address, buf, sizeof(buf));
 }
 
+static bool write_u16(i2c_address_t const address, u8 const reg, u16 const value) {
+	u8 const buf[3] = { reg, value & 0xff, value >> 8 };
+	return i2c_send(address, buf, sizeof(buf));
+}
+
 static bool write_reg(i2c_address_t const address, u8 const reg_base, u8* const storage_base, mcp23017_pin_t const pin, bool const value) {
 	u8 const offset = offset_for_pin(pin);
 	u8 const shift = shift_for_pin(pin);
@@ -91,6 +96,32 @@ bool mcp23017_set_mode(mcp23017_device_t* const this, mcp23017_pin_t const pin, 
 bool mcp23017_write(mcp23017_device_t* const this, mcp23017_pin_t const pin, bool const value) {
 	io_delay();
 	return write_reg(this->address, REG_GPIO, this->outputs, pin, value);
+}
+
+bool mcp23017_write_all(mcp23017_device_t* const this, u16 const values) {
+	io_delay();
+
+	u8 const old_bank0 = this->outputs[0];
+	u8 const old_bank1 = this->outputs[1];
+	u8 const new_bank0 = (u8)(values & 0xff);
+	u8 const new_bank1 = (u8)(values >> 8);
+
+	this->outputs[0] = new_bank0;
+	this->outputs[1] = new_bank1;
+
+	if (new_bank0 != old_bank0) {
+		if (new_bank1 != old_bank1) {
+			return write_u16(this->address, REG_GPIO, (u16)new_bank1 << 8 | new_bank0);
+		} else {
+			return write_u8(this->address, REG_GPIO, new_bank0);
+		}
+	} else {
+		if (new_bank1 != old_bank1) {
+			return write_u8(this->address, REG_GPIO + 1, new_bank1);
+		} else {
+			return true;
+		}
+	}
 }
 
 bool mcp23017_read(mcp23017_device_t* const this, mcp23017_pin_t const pin, bool* const ret) {

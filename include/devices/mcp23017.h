@@ -34,6 +34,8 @@ bool mcp23017_set_mode(mcp23017_device_t* this, mcp23017_pin_t pin, mcp23017_mod
 // returns true on success, false on failure.
 bool mcp23017_write(mcp23017_device_t* this, mcp23017_pin_t pin, bool value);
 
+bool mcp23017_write_all(mcp23017_device_t* this, u16 values);
+
 // returns true on success, false on failure.
 bool mcp23017_read(mcp23017_device_t* this, mcp23017_pin_t pin, bool* ret);
 
