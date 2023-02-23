@@ -76,16 +76,24 @@ void uart_init(void) {
 	BASE[CONTROL] = ENABLE_DEVICE | ENABLE_RECEIVE | ENABLE_TRANSMIT;
 }
 
+bool uart_can_send(void) {
+	return !(BASE[STATUS] & TRANSMIT_FIFO_FULL);
+}
+
 void uart_send(char const ch) {
-	while (BASE[STATUS] & TRANSMIT_FIFO_FULL) {
+	while (!uart_can_send()) {
 		asm volatile("isb");
 	}
 
 	BASE[FIFO] = ch;
 }
 
+bool uart_can_recv(void) {
+	return !(BASE[STATUS] & RECEIVE_FIFO_EMPTY);
+}
+
 u8 uart_recv(void) {
-	while (BASE[STATUS] & RECEIVE_FIFO_EMPTY) {
+	while (!uart_can_recv()) {
 		asm volatile("isb");
 	}
 
