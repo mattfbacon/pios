@@ -1,4 +1,5 @@
 -Wall
+--target=aarch64-unknown-none
 -Wextra
 -O2
 -std=gnu2x
