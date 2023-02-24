@@ -26,13 +26,15 @@ KERNEL_SOURCES := \
 
 ARMSTUB_SOURCES := armstub.s
 
-CFLAGS := -Wall -Wextra -O2 -std=gnu2x -ffreestanding -nostdinc -mcpu=cortex-a72 -iquote$(INCLUDE_DIR) -include$(INCLUDE_DIR)/common.h
+CFLAGS := -Wall -Wextra -O2 -std=gnu2x -ffreestanding -nostdinc -mcpu=cortex-a72 -iquote$(INCLUDE_DIR) -MMD -include$(INCLUDE_DIR)/common.h
 
 CC := clang --target=aarch64-unknown-none
 OBJCOPY := llvm-objcopy
 LD := ld.lld -m aarch64linux
 
 .DEFAULT_GOAL := images
+
+-include $(patsubst %,$(BUILD_DIR)/%.d,$(KERNEL_SOURCES))
 
 $(BUILD_DIR)/%.s.o: $(SRC_DIR)/%.s
 	mkdir -p $(shell dirname $@)
