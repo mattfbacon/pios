@@ -26,7 +26,7 @@ KERNEL_SOURCES := \
 
 ARMSTUB_SOURCES := armstub.s
 
-CFLAGS := -Wall -Wextra -O2 -std=gnu2x -ffreestanding -nostdinc -mcpu=cortex-a72 -iquote$(INCLUDE_DIR) -MMD -include$(INCLUDE_DIR)/common.h
+CFLAGS := -Wall -Wextra -O2 -g -std=gnu2x -ffreestanding -nostdinc -mcpu=cortex-a72 -iquote$(INCLUDE_DIR) -MMD -include$(INCLUDE_DIR)/common.h
 
 CC := clang --target=aarch64-unknown-none
 OBJCOPY := llvm-objcopy
