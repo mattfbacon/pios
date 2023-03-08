@@ -48,7 +48,11 @@ $(BUILD_DIR)/%.bin.o: %.bin
 	mkdir -p $(shell dirname $@)
 	$(OBJCOPY) -I binary -O elf64-littleaarch64 -B aarch64 $< $@
 
-$(BUILD_DIR)/kernel8.elf: linker.ld $(patsubst %,$(BUILD_DIR)/%.o,$(KERNEL_SOURCES))
+$(BUILD_DIR)/rust.a: rust
+	cargo build --manifest-path $</Cargo.toml --release --target aarch64-unknown-none
+	cp $(shell cargo metadata --manifest-path $</Cargo.toml --format-version 1 | jq --raw-output .target_directory)/aarch64-unknown-none/release/libpios_utils.a $@
+
+$(BUILD_DIR)/kernel8.elf: linker.ld $(patsubst %,$(BUILD_DIR)/%.o,$(KERNEL_SOURCES)) $(BUILD_DIR)/rust.a
 	mkdir -p $(shell dirname $@)
 	$(LD) -T $^ -o $@
 
