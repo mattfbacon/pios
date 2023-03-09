@@ -23,33 +23,11 @@ static struct {
 } volatile* const IRQ_BASE = (void volatile*)(PERIPHERAL_BASE + 0xb200);
 
 static void init_controller(void) {
-	IRQ_BASE->irq0_enable[0] = IRQ0_TIMER1
-#ifdef SCHED_TIMER
-		| IRQ0_TIMER3
-#endif
-		;
+	IRQ_BASE->irq0_enable[0] = IRQ0_TIMER1;
 }
-
-#ifdef SCHED_TIMER
-enum {
-	// 10 microseconds per time slice
-	TIMER3_INTERVAL = 10,
-};
-
-static u32 timer3_current = 0;
-
-static void init_timers(void) {
-	timer3_current = timer_get_count();
-	timer3_current += TIMER3_INTERVAL;
-	TIMER_BASE->compare[3] = timer3_current;
-}
-#endif
 
 void exception_init(void) {
 	asm volatile("adr x0, exception_vector_table\nmsr vbar_el1, x0" ::: "x0");
-#ifdef SCHED_TIMER
-	init_timers();
-#endif
 	init_controller();
 	asm volatile("msr daifclr, #0b0110");
 }
@@ -64,15 +42,7 @@ void exception_handle_invalid(u64 const index, u64 const syndrome, u64 const add
 void exception_handle_el1_irq(void) {
 	u32 const pending0 = IRQ_BASE->irq0_pending[0];
 
-#ifdef SCHED_TIMER
-	if (pending0 & IRQ0_TIMER3) {
-		timer3_current += TIMER3_INTERVAL;
-		TIMER_BASE->compare[3] = timer3_current;
-		TIMER_BASE->control_status |= IRQ0_TIMER3;
-	}
-#endif
-
 	if (pending0 & IRQ0_TIMER1) {
-		TIMER_BASE->control_status |= IRQ0_TIMER1;
+		timer_acknowledge(1);
 	}
 }

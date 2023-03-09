@@ -2,15 +2,7 @@
 
 #include "base.h"
 
-enum {
-	TIMER_FREQ = 1'000'000,
-};
-
-static struct {
-	u32 control_status;
-	u32 counter_lo;
-	u32 counter_hi;
-	u32 compare[4];
-} volatile* const TIMER_BASE = (void volatile*)(PERIPHERAL_BASE + 0x3000);
-
-u64 timer_get_count(void);
+void timer_acknowledge(u8 timer);
+u64 timer_get_micros(void);
+// Only takes the lower 32 bits so multiple cycles may be necessary to sleep for long periods of time.
+void timer_set_compare(u32 end_micros);
