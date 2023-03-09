@@ -18,8 +18,8 @@ void main(void) {
 
 	pwm_init_clock(100);
 
-	pwm_set_range(pwm_controller_0, pwm_channel_1, 1000);
-	pwm_set_data(pwm_controller_0, pwm_channel_1, 1000);
+	pwm_set_range(pwm_controller_0, pwm_channel_1, 1'000);
+	pwm_set_data(pwm_controller_0, pwm_channel_1, 1'000);
 	pwm_init_channel(pwm_controller_0, pwm_channel_1, pwm_channel_enabled | pwm_channel_use_m_s_algorithm);
 
 	gpio_set_mode(42, gpio_mode_output);
@@ -28,7 +28,7 @@ void main(void) {
 	while (true) {
 		for (usize i = 0; i < sizeof(SIN_DISCRETE) / sizeof(SIN_DISCRETE[0]); ++i) {
 			pwm_set_data(pwm_controller_0, pwm_channel_1, SIN_DISCRETE[i]);
-			sleep_micros(10000);
+			sleep_micros(10'000);
 		}
 	}
 }

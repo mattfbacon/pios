@@ -16,7 +16,7 @@
 #include "uart.h"
 
 // for uart0
-static u32 volatile* const BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x201000);
+static u32 volatile* const BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x201'000);
 
 enum {
 	TX_PIN = 14,
@@ -56,9 +56,8 @@ u32 div_rounded(u32 const dividend, u32 const divisor) {
 	return (dividend + (divisor / 2)) / divisor;
 }
 
-// register value = round((system clock freq (500 mhz) / (desired baud * 8)) - 1)
 u32 baud_to_reg_value(u32 const baud) {
-	return div_rounded(500000000, baud * 8) - 1;
+	return div_rounded(500'000'000, baud * 8) - 1;
 }
 
 void uart_init(void) {

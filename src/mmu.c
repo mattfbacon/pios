@@ -1,3 +1,5 @@
+#include "base.h"
+
 enum {
 	PAGE_SHIFT = 12,
 	TABLE_SHIFT = 9,
@@ -6,8 +8,6 @@ enum {
 	SECTION_SIZE = 1 << SECTION_SHIFT,
 	ENTRIES_PER_TABLE = 512,
 	NUM_PMDS = 4,
-
-	DEVICE_START = 0xfc00'0000,
 
 	// Granule size = 4k
 	TCR_TG0_4K = 0 << 14,
@@ -62,7 +62,7 @@ static void create_block_map(table_t pmd, virtual_addr_t const virtual_start, vi
 	u64 const physical_base = physical_base_ & ~((1 << SECTION_SHIFT) - 1);
 	for (u64 i = start_index; i <= end_index; ++i) {
 		physical_addr_t const this_base = physical_base + (SECTION_SIZE * i);
-		u64 const flags = this_base >= DEVICE_START ? TD_DEVICE_BLOCK_FLAGS : TD_KERNEL_BLOCK_FLAGS;
+		u64 const flags = this_base >= DEVICE_BASE ? TD_DEVICE_BLOCK_FLAGS : TD_KERNEL_BLOCK_FLAGS;
 		pmd[i] = this_base | flags;
 	}
 }

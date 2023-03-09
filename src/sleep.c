@@ -22,7 +22,7 @@ static u64 counter_count(void) {
 
 static void sleep_micros_spin(u64 const micros) {
 	u32 const counter_hz = counter_freq();
-	u64 const steps_needed = ((u64)counter_hz * micros) / 1000000;
+	u64 const steps_needed = ((u64)counter_hz * micros) / 1'000'000;
 	u64 const counter_end = counter_count() + steps_needed;
 
 	while (counter_count() < counter_end)

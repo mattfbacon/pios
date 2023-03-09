@@ -112,7 +112,7 @@ enum {
 	CONDITION_3_3V = 1,
 	// A dummy byte that is simply echoed back by the card.
 	// This alternating pattern of 0s and 1s is recommended.
-	CONDITION_ECHO = 0b10101010,
+	CONDITION_ECHO = 0b1010'1010,
 	CONDITION = CONDITION_3_3V << CONDITION_VOLTAGE_SHIFT | CONDITION_ECHO,
 	CONDITION_MASK = 0xfff,
 

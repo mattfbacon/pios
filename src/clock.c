@@ -1,12 +1,12 @@
 #include "base.h"
 #include "clock.h"
 
-static u32 volatile* const CLOCK_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x101000);
+static u32 volatile* const CLOCK_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x10'1000);
 
 enum {
 	CLOCK_CONTROL = 0,
 	CLOCK_DIVISOR = 1,
-	CLOCK_PASSWORD = 0x5a000000,
+	CLOCK_PASSWORD = 0x5a00'0000,
 	CLOCK_BUSY = 1 << 7,
 	CLOCK_DISABLE = 1 << 5,
 	CLOCK_ENABLE = 1 << 4,

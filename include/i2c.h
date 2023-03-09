@@ -1,10 +1,10 @@
 #pragma once
 
 enum {
-	i2c_speed_slow = 10000,
-	i2c_speed_standard = 100000,
-	i2c_speed_fast = 400000,
-	i2c_speed_fast_plus = 1000000,
+	i2c_speed_slow = 10'000,
+	i2c_speed_standard = 100'000,
+	i2c_speed_fast = 400'000,
+	i2c_speed_fast_plus = 1'000'000,
 };
 
 typedef u8 i2c_address_t;

@@ -6,8 +6,8 @@ void main(void) {
 	gpio_set_mode(act_led_pin, gpio_mode_output);
 	while (true) {
 		gpio_write(act_led_pin, true);
-		sleep_micros(500000);
+		sleep_micros(500'000);
 		gpio_write(act_led_pin, false);
-		sleep_micros(500000);
+		sleep_micros(500'000);
 	}
 }
