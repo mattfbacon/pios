@@ -2,16 +2,20 @@
 #include "pwm.h"
 #include "sleep.h"
 
+enum {
+	PIN_AUDIO1 = 40,
+	PIN_AUDIO2 = 41,
+};
+
 static u32 g(u32 const i, u32 const x, u32 const t, u32 const o) {
 	return ((3 & x & (i * ((3 & i >> 16 ? "BY}6YB6$" : "Qj}6jQ6%")[t % 8] + 51) >> o)) << 4);
 }
 
 void main(void) {
-	// the two pins corresponding to the audio jack on the board
-	gpio_set_pull(40, gpio_pull_floating);
-	gpio_set_mode(40, gpio_mode_alt0);
-	gpio_set_pull(41, gpio_pull_floating);
-	gpio_set_mode(41, gpio_mode_alt0);
+	gpio_set_pull(PIN_AUDIO1, gpio_pull_floating);
+	gpio_set_mode(PIN_AUDIO1, gpio_mode_alt0);
+	gpio_set_pull(PIN_AUDIO2, gpio_pull_floating);
+	gpio_set_mode(PIN_AUDIO2, gpio_mode_alt0);
 
 	pwm_init_clock(2);
 	pwm_init_channel(pwm_controller_1, pwm_channel_0, pwm_channel_enabled | pwm_channel_use_fifo);
