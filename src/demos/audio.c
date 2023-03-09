@@ -7,10 +7,6 @@ static u32 g(u32 const i, u32 const x, u32 const t, u32 const o) {
 }
 
 void main(void) {
-	// we use the ACT LED (the green one on the board) as a status indicator
-	gpio_pin_t const act_led = 42;
-	gpio_set_mode(act_led, gpio_mode_output);
-
 	// the two pins corresponding to the audio jack on the board
 	gpio_set_pull(40, gpio_pull_floating);
 	gpio_set_mode(40, gpio_mode_alt0);
@@ -26,8 +22,6 @@ void main(void) {
 	u32 const range = 3375;
 	pwm_set_range(pwm_controller_1, pwm_channel_0, range);
 	pwm_set_range(pwm_controller_1, pwm_channel_1, range);
-
-	gpio_write(act_led, true);
 
 	// This song is called "Bitshift Variations in C Minor" if you're curious. It's a really cool way of generating a fun song in a very short amount of code.
 	for (u32 i = 0;; ++i) {

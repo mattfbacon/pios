@@ -3,9 +3,6 @@
 #include "uart.h"
 
 void main(void) {
-	gpio_set_mode(42, gpio_mode_output);
-	gpio_write(42, true);
-
 	while (true) {
 		uart_send_str("Enter a line: ");
 
