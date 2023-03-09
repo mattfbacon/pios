@@ -24,6 +24,7 @@ KERNEL_SOURCES := \
 	timer.c \
 	uart.c \
 	mmu.c \
+	emmc.c \
 	log.c \
 
 ARMSTUB_SOURCES := armstub.s

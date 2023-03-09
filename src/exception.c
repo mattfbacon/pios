@@ -12,6 +12,7 @@ enum {
 
 	IRQ1_I2C = 1 << (53 - 32),
 	IRQ1_UARTS = 1 << (57 - 32),
+	IRQ1_EMMC = 1 << (62 - 32),
 };
 
 static struct {
