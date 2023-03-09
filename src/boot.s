@@ -7,9 +7,7 @@
 // data accesses at EL0 are little-endian
 .equ SCTLR_EOE_LITTLE_ENDIAN, 0 << 24
 // instruction accesses are not cacheable
-// XXX investigate if this can be enabled
 .equ SCTLR_I_CACHE_DISABLED, 0 << 12
-// XXX investigate if this can be enabled
 // data accesses are not cacheable
 .equ SCTLR_D_CACHE_DISABLED, 0 << 2
 // MMU is not enabled
@@ -85,6 +83,8 @@ _start:
 	// != 0
 	bne .loop
 .endloop:
+
+	bl mmu_init
 
 	bl standard_init
 	bl main

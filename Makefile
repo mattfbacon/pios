@@ -23,6 +23,7 @@ KERNEL_SOURCES := \
 	string.c \
 	timer.c \
 	uart.c \
+	mmu.c \
 
 ARMSTUB_SOURCES := armstub.s
 
