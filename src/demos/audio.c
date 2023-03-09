@@ -17,13 +17,14 @@ void main(void) {
 	gpio_set_pull(PIN_AUDIO2, gpio_pull_floating);
 	gpio_set_mode(PIN_AUDIO2, gpio_mode_alt0);
 
-	pwm_init_clock(2);
+	// The song plays at 8 000 hz.
+	// We'll set the clock so that we can have 1 000 repetitions of each pulse.
+	pwm_init_clock(8'000 * 1'000);
 	pwm_init_channel(pwm_controller_1, pwm_channel_0, pwm_channel_enabled | pwm_channel_use_fifo);
 	pwm_init_channel(pwm_controller_1, pwm_channel_1, pwm_channel_enabled | pwm_channel_use_fifo);
 	pwm_fifo_clear(pwm_controller_1);
 
-	// gets us to 8000 hz
-	u32 const range = 3375;
+	u32 const range = 1'000;
 	pwm_set_range(pwm_controller_1, pwm_channel_0, range);
 	pwm_set_range(pwm_controller_1, pwm_channel_1, range);
 
@@ -33,7 +34,7 @@ void main(void) {
 		u32 const s = i >> 14;
 		u8 const this_data = g(i, 1, n, 12) + g(i, s, n ^ i >> 13, 10) + g(i, s / 3, n + ((i >> 11) % 3), 10) + g(i, s / 5, 8 + n - ((i >> 10) % 3), 9);
 
-		// the audio jack has two channels so we write the data twice.
+		// The audio jack has two channels so we write the data twice.
 		pwm_fifo_write(pwm_controller_1, this_data);
 		pwm_fifo_write(pwm_controller_1, this_data);
 	}

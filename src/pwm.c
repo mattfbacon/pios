@@ -1,6 +1,6 @@
 #include "base.h"
-#include "clock.h"
 #include "log.h"
+#include "mailbox.h"
 #include "pwm.h"
 
 static u32 volatile* const PWM0_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x20c000);
@@ -40,9 +40,9 @@ static u32 channel_shift(pwm_channel_t const channel) {
 	}
 }
 
-void pwm_init_clock(u32 const divisor) {
-	LOG_TRACE("initializing PWM clock to divisor %u", divisor);
-	clock_init(clock_id_pwm, divisor);
+void pwm_init_clock(u32 const rate) {
+	LOG_TRACE("initializing PWM clock to rate %u", rate);
+	mailbox_set_clock_rate(mailbox_clock_pwm, rate);
 }
 
 void pwm_init_channel(pwm_controller_t const controller, pwm_channel_t const channel, pwm_channel_init_flags_t const flags) {

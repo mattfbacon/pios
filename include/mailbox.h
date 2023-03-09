@@ -15,6 +15,7 @@ typedef enum mailbox_channel {
 typedef enum mailbox_clock {
 	mailbox_clock_emmc = 1,
 	mailbox_clock_uart = 2,
+	mailbox_clock_pwm = 10,
 } mailbox_clock_t;
 
 extern u32 volatile mailbox[64];

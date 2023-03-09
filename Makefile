@@ -4,7 +4,6 @@ BUILD_DIR := target
 
 KERNEL_SOURCES := \
 	boot.s \
-	clock.c \
 	devices/aht20.c \
 	devices/lcd.c \
 	devices/mcp23017.c \

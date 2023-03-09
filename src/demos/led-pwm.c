@@ -1,4 +1,5 @@
 #include "gpio.h"
+#include "log.h"
 #include "pwm.h"
 #include "sleep.h"
 
@@ -12,18 +13,23 @@ static u32 const SIN_DISCRETE[]
 	    158, 146, 136, 125, 115, 105, 95,  86,  78,  70,  62,  54,  48,   41,   35,   30,  24,  20,  16,  12,  9,   6,   4,   2,   1,   0 };
 
 void main(void) {
+	LOG_INFO("setting up PWM pin");
+
 	gpio_pin_t const pwm_pin = 13;
 	gpio_set_pull(pwm_pin, gpio_pull_floating);
 	gpio_set_mode(pwm_pin, gpio_mode_alt0);
 
-	pwm_init_clock(100);
+	LOG_INFO("setting PWM clock");
+
+	pwm_init_clock(100'000);
+
+	LOG_INFO("setting PWM range");
 
 	pwm_set_range(pwm_controller_0, pwm_channel_1, 1'000);
 	pwm_set_data(pwm_controller_0, pwm_channel_1, 1'000);
 	pwm_init_channel(pwm_controller_0, pwm_channel_1, pwm_channel_enabled | pwm_channel_use_m_s_algorithm);
 
-	gpio_set_mode(42, gpio_mode_output);
-	gpio_write(42, true);
+	LOG_INFO("sending data");
 
 	while (true) {
 		for (usize i = 0; i < sizeof(SIN_DISCRETE) / sizeof(SIN_DISCRETE[0]); ++i) {

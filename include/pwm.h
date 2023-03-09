@@ -22,7 +22,7 @@ typedef enum pwm_channel_init_flags {
 	pwm_channel_use_m_s_algorithm = 1 << 7,
 } pwm_channel_init_flags_t;
 
-void pwm_init_clock(u32 divisor);
+void pwm_init_clock(u32 rate);
 
 void pwm_init_channel(pwm_controller_t controller, pwm_channel_t channel, pwm_channel_init_flags_t flags);
 
