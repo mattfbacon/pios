@@ -1,7 +1,7 @@
 #include "base.h"
 #include "halt.h"
+#include "log.h"
 #include "timer.h"
-#include "uart.h"
 
 enum {
 	IRQ0_TIMER0 = 1 << 0,
@@ -34,7 +34,7 @@ void exception_init(void) {
 
 // only exposed to assembly
 void exception_handle_invalid(u64 const index, u64 const syndrome, u64 const address) {
-	uart_printf("invalid exception caught\r\nindex = %u\r\nsyndrome = 0x%x\r\naddress = 0x%x\r\n", index, syndrome, address);
+	LOG_FATAL("invalid exception caught, index = %x, syndrome = 0x%x, address = 0x%x", index, syndrome, address);
 	halt();
 }
 

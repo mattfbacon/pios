@@ -1,4 +1,4 @@
-#include "uart.h"
+#include "log.h"
 
 static u8 get_el(void) {
 	u64 ret;
@@ -7,5 +7,5 @@ static u8 get_el(void) {
 }
 
 void main(void) {
-	uart_printf("current EL: %u\r\n", get_el());
+	LOG_INFO("current EL: %u", get_el());
 }
