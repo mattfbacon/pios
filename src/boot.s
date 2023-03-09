@@ -36,6 +36,9 @@
 
 .equ CPACR_VALUE, CPACR_ENABLE_FLOATING_POINT | CPACR_ENABLE_SVE
 
+.equ CPTR_ALLOW_SVE, 0b11 << 16
+.equ CPTR_VALUE, CPTR_ALLOW_SVE
+
 .global _start
 .extern standard_init
 .extern main
@@ -51,8 +54,8 @@ _start:
 	mov x4, #HCR_VALUE
 	msr hcr_el2, x4
 
-	// enable floating point and SVE
-	msr cptr_el2, xzr
+	mov x4, #CPTR_VALUE
+	msr cptr_el2, x4
 
 	mov x4, #CPACR_VALUE
 	msr cpacr_el1, x4

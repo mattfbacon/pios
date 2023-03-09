@@ -34,6 +34,10 @@
 .equ GICD_CTRLR, 0x0
 .equ GICD_IGROUPR, 0x80
 
+.equ CPTR_ALLOW_SVE, 1 << 8
+// also allows TFP with a 0 at bit 10
+.equ CPTR_VAL, CPTR_ALLOW_SVE
+
 .global _start
 _start:
 	// LOCAL_CONTROL:
@@ -59,8 +63,8 @@ _start:
 	msr CNTVOFF_EL2, xzr
 
 	// Enable FP/SIMD
-	// Bit 10 (TFP) is set to 0
-	msr CPTR_EL3, xzr
+	mov x0, #CPTR_VAL
+	msr CPTR_EL3, x0
 
 	// Set up SCR
 	mov x0, #SCR_VAL
