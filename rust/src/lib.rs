@@ -4,11 +4,10 @@ use core::panic::PanicInfo;
 
 // We use a macro to declare multiple variants of this function based on the integer type.
 // It takes `$name` as the name of the function and `$ty` as the integer type to be converted to a string.
-macro_rules! make_fn {
+macro_rules! make_int_fn {
 	($name:ident, $ty:ty) => {
-		// This attribute ensures that we will be able to call the function by name in our C code.
+		// The `#[no_mangle]` attribute ensures that we will be able to call the function by name in our C code.
 		// Rust will mangle the name otherwise.
-		#[no_mangle]
 		// We mark the function `unsafe` because if its arguments are not correct it could cause undefined behavior.
 		// See the "safety comment" for details.
 		// We mark the function `extern "C"` so that it uses the C calling convention and we can call it from C.
@@ -16,6 +15,7 @@ macro_rules! make_fn {
 		///
 		/// `buf` must point to an array large enough to store the formatted integer, plus one for the null terminator.
 		/// 21 bytes is sufficient for `u64`, and 22 for `i64`.
+		#[no_mangle]
 		pub unsafe extern "C" fn $name(buf: *mut u8, value: $ty) {
 			// The `itoa` crate uses their own `Buffer` type, so we create that here.
 			let mut itoa_buf = itoa::Buffer::new();
@@ -28,9 +28,22 @@ macro_rules! make_fn {
 	};
 }
 
-// We generate two instances of the function, one for unsigned numbers and one for signed numbers.
-make_fn!(u64_to_str, u64);
-make_fn!(i64_to_str, i64);
+// We generate two instances of the integer function, one for unsigned numbers and one for signed numbers.
+make_int_fn!(u64_to_str, u64);
+make_int_fn!(i64_to_str, i64);
+
+// Unlike `itoa`, `ryu`, its floating-point companion, offers a "raw" API that makes our code simpler.
+// It provides separate functions for `f32` (equivalent to `float` in C) and `f64`.
+// In our case, it is simpler and easier to only support `f64` and promote `f32`s to `f64` as necessary.
+/// # Safety
+///
+/// `buf` must point to an array large enough to store the formatted float, plus one for the null terminator.
+/// 25 bytes is sufficient for `f64`.
+#[no_mangle]
+pub unsafe extern "C" fn f64_to_str(buf: *mut u8, value: f64) {
+	let len = ryu::raw::format64(value, buf);
+	*buf.add(len) = b'\0';
+}
 
 // This is how we declare a C function so we can call it from Rust.
 extern "C" {

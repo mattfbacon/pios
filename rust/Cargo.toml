@@ -8,6 +8,7 @@ crate-type = ["staticlib"]
 
 [dependencies]
 itoa = "1"
+ryu = "1"
 
 [profile.dev]
 panic = "abort"

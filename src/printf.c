@@ -63,6 +63,13 @@ void vdprintf(printf_write_callback_t const write, void* const user, char const*
 				write_str(write, user, itoa_buf);
 				break;
 			}
+			case 'f': {
+				f64 const arg = __builtin_va_arg(args, f64);
+				char buf[32];
+				f64_to_str(buf, arg);
+				write_str(write, user, buf);
+				break;
+			}
 			case 'x': {
 				u64 const arg = __builtin_va_arg(args, u64);
 				char itoa_buf[17];
