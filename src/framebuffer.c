@@ -1,33 +1,6 @@
 #include "framebuffer.h"
 #include "mailbox.h"
 
-enum {
-	MAILBOX_REQUEST = 0,
-
-	MAILBOX_CH_POWER = 0,
-	MAILBOX_CH_FB = 1,
-	MAILBOX_CH_VUART = 2,
-	MAILBOX_CH_VCHIQ = 3,
-	MAILBOX_CH_LEDS = 4,
-	MAILBOX_CH_BTNS = 5,
-	MAILBOX_CH_TOUCH = 6,
-	MAILBOX_CH_COUNT = 7,
-	MAILBOX_CH_PROP = 8,
-
-	MAILBOX_TAG_SETPOWER = 0x28001,
-	MAILBOX_TAG_SETCLKRATE = 0x38002,
-
-	MAILBOX_TAG_SETPHYWH = 0x48003,
-	MAILBOX_TAG_SETVIRTWH = 0x48004,
-	MAILBOX_TAG_SETVIRTOFF = 0x48009,
-	MAILBOX_TAG_SETDEPTH = 0x48005,
-	MAILBOX_TAG_SETPXLORDR = 0x48006,
-	MAILBOX_TAG_GETFB = 0x40001,
-	MAILBOX_TAG_GETSTRIDE = 0x40008,
-
-	MAILBOX_TAG_LAST = 0,
-};
-
 struct framebuffer {
 	u32 width;
 	u32 height;
@@ -44,41 +17,41 @@ void framebuffer_init(void) {
 	mailbox[0] = 35 * 4;
 	mailbox[1] = MAILBOX_REQUEST;
 
-	mailbox[2] = MAILBOX_TAG_SETPHYWH;
+	mailbox[2] = MAILBOX_TAG_SET_PHYSICAL_WIDTH_HEIGHT;
 	mailbox[3] = 8;
 	mailbox[4] = 8;
 	mailbox[5] = desired_width;
 	mailbox[6] = desired_height;
 
-	mailbox[7] = MAILBOX_TAG_SETVIRTWH;
+	mailbox[7] = MAILBOX_TAG_SET_VIRTUAL_WIDTH_HEIGHT;
 	mailbox[8] = 8;
 	mailbox[9] = 8;
 	mailbox[10] = desired_width;
 	mailbox[11] = desired_height;
 
-	mailbox[12] = MAILBOX_TAG_SETVIRTOFF;
+	mailbox[12] = MAILBOX_TAG_SET_VIRTUAL_OFFSET;
 	mailbox[13] = 8;
 	mailbox[14] = 8;
 	mailbox[15] = 0;
 	mailbox[16] = 0;
 
-	mailbox[17] = MAILBOX_TAG_SETDEPTH;
+	mailbox[17] = MAILBOX_TAG_SET_DEPTH;
 	mailbox[18] = 4;
 	mailbox[19] = 4;
 	mailbox[20] = 32;
 
-	mailbox[21] = MAILBOX_TAG_SETPXLORDR;
+	mailbox[21] = MAILBOX_TAG_SET_PIXEL_ORDER;
 	mailbox[22] = 4;
 	mailbox[23] = 4;
 	mailbox[24] = 1;
 
-	mailbox[25] = MAILBOX_TAG_GETFB;
+	mailbox[25] = MAILBOX_TAG_GET_FRAMEBUFFER;
 	mailbox[26] = 8;
 	mailbox[27] = 8;
 	mailbox[28] = 4096;
 	mailbox[29] = 0;
 
-	mailbox[30] = MAILBOX_TAG_GETSTRIDE;
+	mailbox[30] = MAILBOX_TAG_GET_STRIDE;
 	mailbox[31] = 4;
 	mailbox[32] = 4;
 	mailbox[33] = 0;
@@ -86,7 +59,7 @@ void framebuffer_init(void) {
 	mailbox[34] = MAILBOX_TAG_LAST;
 
 	// Check call is successful and we have a pointer with depth 32
-	if (mailbox_call(MAILBOX_CH_PROP) && mailbox[20] == 32 && mailbox[28] != 0) {
+	if (mailbox_call(mailbox_channel_tags) && mailbox[20] == 32 && mailbox[28] != 0) {
 		framebuffer.width = mailbox[10];
 		framebuffer.height = mailbox[11];
 		framebuffer.stride = mailbox[33] / sizeof(framebuffer_color_t);  // XXX will stride ever not be a multiple of 4??

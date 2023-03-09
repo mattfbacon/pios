@@ -70,17 +70,7 @@ void uart_init(void) {
 	BASE[CONTROL] = 0;
 	BASE[INTERRUPT_CONTROL] = CLEAR_INTERRUPTS;
 
-	// set uart clock to 3 mhz
-	mailbox[0] = 9 * 4;
-	mailbox[1] = 0;
-	mailbox[2] = 0x38002;
-	mailbox[3] = 12;
-	mailbox[4] = 8;
-	mailbox[5] = 2;
-	mailbox[6] = 3'000'000;
-	mailbox[7] = 0;
-	mailbox[8] = 0;
-	mailbox_call(8);
+	mailbox_set_clock_rate(mailbox_clock_uart, 3'000'000);
 
 	BASE[BAUD_INTEGER] = 1;
 	BASE[BAUD_FRACTION] = 40;
