@@ -75,6 +75,8 @@ static bool read_reg(i2c_address_t const address, u8 const reg_base, mcp23017_pi
 }
 
 void mcp23017_init(mcp23017_device_t* const this, i2c_address_t const address) {
+	LOG_DEBUG("initializing MCP23017 object");
+
 	this->address = address;
 	this->pulls[0] = 0x00;
 	this->pulls[1] = 0x00;
@@ -85,16 +87,22 @@ void mcp23017_init(mcp23017_device_t* const this, i2c_address_t const address) {
 }
 
 bool mcp23017_set_mode(mcp23017_device_t* const this, mcp23017_pin_t const pin, mcp23017_mode_t const mode) {
+	LOG_DEBUG("setting mode of pin %u to %u", pin, mode);
+
 	io_delay();
 	return write_reg(this->address, REG_PIN_MODE, this->modes, pin, (bool)mode);
 }
 
 bool mcp23017_write(mcp23017_device_t* const this, mcp23017_pin_t const pin, bool const value) {
+	LOG_DEBUG("writing %B to pin %u", value, pin);
+
 	io_delay();
 	return write_reg(this->address, REG_GPIO, this->outputs, pin, value);
 }
 
 bool mcp23017_write_all(mcp23017_device_t* const this, u16 const values) {
+	LOG_DEBUG("writing all pins: %x", values);
+
 	io_delay();
 
 	u8 const old_bank0 = this->outputs[0];
@@ -121,16 +129,26 @@ bool mcp23017_write_all(mcp23017_device_t* const this, u16 const values) {
 }
 
 bool mcp23017_read(mcp23017_device_t* const this, mcp23017_pin_t const pin, bool* const ret) {
+	LOG_DEBUG("reading pin %u", pin);
+
 	io_delay();
-	return read_reg(this->address, REG_GPIO, pin, ret);
+	TRY(read_reg(this->address, REG_GPIO, pin, ret))
+	LOG_DEBUG("read %B from pin %u", *ret, pin);
+	return true;
 }
 
 bool mcp23017_read_all(mcp23017_device_t* const this, u16* const ret) {
+	LOG_DEBUG("reading all pins");
+
 	io_delay();
-	return read_u16(this->address, REG_GPIO, ret);
+	TRY(read_u16(this->address, REG_GPIO, ret))
+	LOG_DEBUG("read all pins: %x", *ret);
+	return true;
 }
 
 bool mcp23017_set_pull(mcp23017_device_t* const this, mcp23017_pin_t const pin, mcp23017_pull_t const pull) {
+	LOG_DEBUG("setting pull of pin %u to %u", pin, pull);
+
 	io_delay();
 	return write_reg(this->address, REG_PULL_UP, this->pulls, pin, (bool)pull);
 }

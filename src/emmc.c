@@ -185,6 +185,8 @@ static u32 get_clock_divider(u32 const base_clock, u32 const target_rate) {
 }
 
 static bool switch_clock_rate(u32 const base_clock, u32 const target_rate) {
+	LOG_TRACE("switching clock rate to %u with base clock %u", target_rate, base_clock);
+
 	// get divider here so we fail early if we cannot find one
 	u32 const divider = get_clock_divider(base_clock, target_rate);
 
@@ -208,10 +210,14 @@ static bool switch_clock_rate(u32 const base_clock, u32 const target_rate) {
 
 	sleep_micros(3'000);
 
+	LOG_TRACE("switched clock rate to %u", target_rate);
+
 	return true;
 }
 
 static bool emmc_setup_clock(void) {
+	LOG_DEBUG("setting up clock");
+
 	EMMC->control2 = 0;
 
 	TRY_MSG(mailbox_get_clock_rate(mailbox_clock_emmc, &device.base_clock))
@@ -236,14 +242,19 @@ static bool emmc_setup_clock(void) {
 
 	sleep_micros(30'000);
 
+	LOG_DEBUG("clock is set up");
+
 	return true;
 }
 
 static void set_last_error(u32 const interrupt_flags) {
+	LOG_ERROR("error occurred: flags %x", interrupt_flags);
 	device.last_error = interrupt_flags & INTERRUPT_ERROR_MASK;
 }
 
 static bool do_data_transfer(emmc_marshaled_command_t const command) {
+	LOG_TRACE("doing data transfer for command %x", command);
+
 	u32 rw_interrupt_flag;
 	bool write;
 
@@ -284,7 +295,9 @@ static bool do_data_transfer(emmc_marshaled_command_t const command) {
 	return true;
 }
 
-static bool emmc_command(emmc_marshaled_command_t const command, u32 arg, u32 timeout) {
+static bool emmc_command(emmc_marshaled_command_t const command, u32 const arg, u32 const timeout) {
+	LOG_DEBUG("sending EMMC command %x with arg %u and timeout %u", command, arg, timeout);
+
 	TRY_MSG(device.transfer_blocks < (1 << 16))
 
 	device.last_error = 0;
@@ -292,6 +305,8 @@ static bool emmc_command(emmc_marshaled_command_t const command, u32 arg, u32 ti
 	EMMC->block_size_count = EMMC_BLOCK_SIZE | (device.transfer_blocks << 16);
 	EMMC->arg1 = arg;
 	EMMC->command = command;
+
+	LOG_TRACE("waiting for \"command done\" interrupt flag");
 
 	sleep_micros(10'000);
 
@@ -305,6 +320,8 @@ static bool emmc_command(emmc_marshaled_command_t const command, u32 arg, u32 ti
 		set_last_error(interrupt_flags);
 		return false;
 	}
+
+	LOG_TRACE("copying response");
 
 	u32 const response_type = (command >> CMD_SHIFT_RESPONSE_TYPE) & CMD_MASK_RESPONSE_TYPE;
 	switch (response_type) {
@@ -327,6 +344,8 @@ static bool emmc_command(emmc_marshaled_command_t const command, u32 arg, u32 ti
 	}
 
 	if (response_type == RESPONSE_48_BUSY || is_data) {
+		LOG_TRACE("waiting for \"data done\" interrupt flag");
+
 		wait_reg_mask(&EMMC->interrupt_flags, INTERRUPT_DATA_ERROR | INTERRUPT_DATA_DONE, true, TIMEOUT_DEFAULT);
 		interrupt_flags = EMMC->interrupt_flags & (INTERRUPT_ERROR_MASK | INTERRUPT_DATA_DONE);
 
@@ -344,6 +363,8 @@ static bool emmc_command(emmc_marshaled_command_t const command, u32 arg, u32 ti
 }
 
 static bool reset_command(void) {
+	LOG_DEBUG("sending reset command");
+
 	EMMC->control[1] |= CTRL1_RESET_COMMAND;
 
 	return wait_reg_mask(&EMMC->control[1], CTRL1_RESET_COMMAND, false, 10'000);
@@ -354,6 +375,8 @@ static bool emmc_app_command(enum emmc_command const command, u32 const arg, u32
 }
 
 static bool check_v2_card(void) {
+	LOG_DEBUG("checking v2 card");
+
 	if (!emmc_command(command_send_if_condition, CONDITION, 200)) {
 		if (device.last_error & INTERRUPT_COMMAND_TIMEOUT) {
 			TRY(reset_command())
@@ -366,6 +389,8 @@ static bool check_v2_card(void) {
 }
 
 static bool check_usable_card(void) {
+	LOG_DEBUG("checking for usable card");
+
 	if (emmc_command(command_io_set_operating_conditions, 0, 1'000)) {
 		return true;
 	} else {
@@ -383,6 +408,8 @@ static bool check_usable_card(void) {
 }
 
 static bool check_sdhc_support(bool const v2_card) {
+	LOG_DEBUG("checking for SDHC support");
+
 	while (true) {
 		u32 const v2_flags = v2_card ? OCR_SDHC_SUPPORT : 0;
 
@@ -398,10 +425,14 @@ static bool check_sdhc_support(bool const v2_card) {
 }
 
 static bool check_ocr(void) {
+	LOG_DEBUG("checking OCR");
+
 	return emmc_app_command(command_check_ocr, 0, TIMEOUT_DEFAULT);
 }
 
 static bool check_rca(void) {
+	LOG_DEBUG("checking RCA");
+
 	// we need to send this command before the "send relative address" command even though we don't care about the card ID.
 	TRY_MSG(emmc_command(command_send_card_id, 0, TIMEOUT_DEFAULT))
 
@@ -416,6 +447,8 @@ static bool check_rca(void) {
 }
 
 static bool select_card(void) {
+	LOG_DEBUG("selecting card");
+
 	TRY_MSG(emmc_command(command_select_card, device.relative_card_address, TIMEOUT_DEFAULT))
 
 	// XXX where is this bitfield documented?
@@ -431,10 +464,14 @@ static bool select_card(void) {
 }
 
 static void enable_bus_power(void) {
+	LOG_DEBUG("enabling bus power");
+
 	EMMC->control[0] |= CTRL0_RPI4_ENABLE_BUS_POWER;
 }
 
 static bool emmc_card_reset(void) {
+	LOG_DEBUG("resetting card");
+
 	EMMC->control[1] = CTRL1_RESET_HOST;
 
 	TRY_MSG(wait_reg_mask(&EMMC->control[1], CTRL1_RESET_ALL, false, TIMEOUT_DEFAULT));
@@ -516,15 +553,19 @@ bool do_data_command(bool const write, u8* const buffer, u32 const num_blocks, u
 }
 
 bool emmc_read(u8* const buffer, u32 const num_blocks, u32 const start_block) {
+	LOG_DEBUG("reading %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
 	return do_data_command(false, buffer, num_blocks, start_block);
 }
 
 bool emmc_write(u8 const* const buffer, u32 const num_blocks, u32 const start_block) {
+	LOG_DEBUG("writing %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
 	// casting away const because the buffer will not be modified in the write mode
 	return do_data_command(true, (u8*)buffer, num_blocks, start_block);
 }
 
 bool emmc_init(void) {
+	LOG_DEBUG("initializing EMMC");
+
 	gpio_set_mode(34, gpio_mode_input);
 	gpio_set_mode(35, gpio_mode_input);
 	gpio_set_mode(36, gpio_mode_input);

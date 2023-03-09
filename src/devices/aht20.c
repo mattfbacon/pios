@@ -54,12 +54,16 @@ static aht20_data_t decode_sensor_data(u8 const data[6]) {
 }
 
 void aht20_init() {
+	LOG_DEBUG("initializing AHT20 sensor");
+
 	u8 buf = 0x71;
 	assert(send(&buf, 1), "send 0x71");
 	assert((get_status() & 0x18) == 0x18, "status is not 0x18");
 }
 
 aht20_data_t aht20_measure() {
+	LOG_DEBUG("measuring from sensor");
+
 	u8 buf[7];
 
 	buf[0] = COMMAND_MEASURE;
@@ -72,5 +76,7 @@ aht20_data_t aht20_measure() {
 
 	assert(recv(buf, 7), "receive measurement data");
 
-	return decode_sensor_data(buf);
+	aht20_data_t const data = decode_sensor_data(buf);
+	LOG_DEBUG("sensor data: humidity %f, temperature %f", data.humidity, data.temperature);
+	return data;
 }

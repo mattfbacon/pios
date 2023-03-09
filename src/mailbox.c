@@ -1,4 +1,5 @@
 #include "base.h"
+#include "log.h"
 #include "mailbox.h"
 #include "try.h"
 
@@ -17,6 +18,8 @@ enum {
 };
 
 bool mailbox_call(mailbox_channel_t const channel) {
+	LOG_DEBUG("mailbox call to channel %u", channel);
+
 	u32 const command = (u32)(usize)&mailbox | (u32)(channel & 0b1111);
 
 	while (VIDEOCORE_MAILBOX[MAILBOX_STATUS] & MAILBOX_FULL) {
@@ -49,6 +52,8 @@ struct mailbox_command_clock {
 };
 
 bool mailbox_get_clock_rate(mailbox_clock_t const clock, u32* const ret) {
+	LOG_DEBUG("getting rate of clock %u", clock);
+
 	mailbox[0] = 8 * sizeof(u32);
 	mailbox[1] = MAILBOX_REQUEST;
 	mailbox[2] = MAILBOX_TAG_GET_CLOCK_RATE;
@@ -60,12 +65,16 @@ bool mailbox_get_clock_rate(mailbox_clock_t const clock, u32* const ret) {
 
 	TRY(mailbox_call(mailbox_channel_tags))
 
-	*ret = mailbox[6];
+	u32 const rate = mailbox[6];
+	LOG_TRACE("clock %u rate is %u", clock, rate);
+	*ret = rate;
 
 	return true;
 }
 
 bool mailbox_set_clock_rate(mailbox_clock_t const clock, u32 const rate) {
+	LOG_DEBUG("setting clock %u rate to %u", clock, rate);
+
 	mailbox[0] = 9 * sizeof(u32);
 	mailbox[1] = MAILBOX_REQUEST;
 	mailbox[2] = MAILBOX_TAG_SET_CLOCK_RATE;

@@ -1,4 +1,5 @@
 #include "framebuffer.h"
+#include "log.h"
 #include "mailbox.h"
 
 struct framebuffer {
@@ -11,6 +12,8 @@ struct framebuffer {
 static struct framebuffer framebuffer = {};
 
 void framebuffer_init(void) {
+	LOG_DEBUG("initializing framebuffer");
+
 	u32 const desired_width = 1920;
 	u32 const desired_height = 1080;
 

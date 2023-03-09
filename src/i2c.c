@@ -1,6 +1,7 @@
 #include "base.h"
 #include "gpio.h"
 #include "i2c.h"
+#include "log.h"
 
 static struct {
 	u32 control;
@@ -27,6 +28,8 @@ enum {
 };
 
 void i2c_init(u32 const clock_speed) {
+	LOG_DEBUG("initializing I2C with clock speed %u", clock_speed);
+
 	gpio_set_mode(2, gpio_mode_alt0);
 	gpio_set_pull(2, gpio_pull_down);
 
@@ -37,6 +40,8 @@ void i2c_init(u32 const clock_speed) {
 }
 
 bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
+	LOG_DEBUG("receiving %u bytes from address %u", len, address);
+
 	BASE->peer_address = (u32)address;
 	BASE->control = CONTROL_CLEAR_FIFO;
 	// clear all these flags before the transfer
@@ -56,10 +61,20 @@ bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
 
 	u32 const status = BASE->status;
 	BASE->status = STATUS_DONE;
-	return !(status & STATUS_ACK_ERROR) && !(status & STATUS_CLOCK_STRETCH_TIMEOUT) && amount_read == len;
+	bool const success = !(status & STATUS_ACK_ERROR) && !(status & STATUS_CLOCK_STRETCH_TIMEOUT) && amount_read == len;
+
+	if (success) {
+		LOG_TRACE("received from address %u the following %u bytes of data: %D", address, len, buf, len);
+	} else {
+		LOG_TRACE("receive from address %u failed; status is %x", address, status);
+	}
+
+	return success;
 }
 
 bool i2c_send(i2c_address_t const address, u8 const* const buf, u32 const len) {
+	LOG_DEBUG("sending to address %u the following %u bytes of data: %D", address, len, buf, len);
+
 	BASE->peer_address = (u32)address;
 	BASE->control = CONTROL_CLEAR_FIFO;
 	// clear all these flags before the transfer

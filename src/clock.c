@@ -1,5 +1,6 @@
 #include "base.h"
 #include "clock.h"
+#include "log.h"
 
 static u32 volatile* const CLOCK_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x10'1000);
 
@@ -14,16 +15,26 @@ enum {
 };
 
 void clock_init(clock_id_t const clock, u32 const divisor) {
+	LOG_DEBUG("initializing clock %u with divisor %u", clock, divisor);
+
 	u32 volatile* reg = &CLOCK_BASE[(u32)clock];
+
+	LOG_TRACE("disabling clock");
 
 	// clock must be disabled before its divisor can be changed
 	reg[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_DISABLE;
 	while (reg[CLOCK_CONTROL] & CLOCK_BUSY)
 		;
 
+	LOG_TRACE("clock disabled, setting divisor");
+
 	reg[CLOCK_DIVISOR] = CLOCK_PASSWORD | (divisor << 12);
+
+	LOG_TRACE("divisor set, enabling clock");
 
 	// datasheet says not to enable clock at the same time as setting the source
 	reg[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_SOURCE_OSCILLATOR;
 	reg[CLOCK_CONTROL] = CLOCK_PASSWORD | CLOCK_SOURCE_OSCILLATOR | CLOCK_ENABLE;
+
+	LOG_TRACE("clock enabled with new divisor");
 }

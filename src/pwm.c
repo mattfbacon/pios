@@ -1,5 +1,6 @@
 #include "base.h"
 #include "clock.h"
+#include "log.h"
 #include "pwm.h"
 
 static u32 volatile* const PWM0_BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x20c000);
@@ -40,10 +41,12 @@ static u32 channel_shift(pwm_channel_t const channel) {
 }
 
 void pwm_init_clock(u32 const divisor) {
+	LOG_TRACE("initializing PWM clock to divisor %u", divisor);
 	clock_init(clock_id_pwm, divisor);
 }
 
 void pwm_init_channel(pwm_controller_t const controller, pwm_channel_t const channel, pwm_channel_init_flags_t const flags) {
+	LOG_DEBUG("initializing PWM%u channel %u with flags %x", controller, channel, flags);
 	u32 const shift = channel_shift(channel);
 	u32 volatile* const reg = &controller_base(controller)[CONTROL];
 	u32 value = *reg;
@@ -53,6 +56,7 @@ void pwm_init_channel(pwm_controller_t const controller, pwm_channel_t const cha
 }
 
 void pwm_fifo_clear(pwm_controller_t const controller) {
+	LOG_TRACE("clearing PWM%u FIFO", controller);
 	controller_base(controller)[CONTROL] |= CLEAR_FIFO;
 }
 
@@ -74,9 +78,11 @@ void pwm_fifo_write(pwm_controller_t const controller, u32 const value) {
 }
 
 void pwm_set_range(pwm_controller_t const controller, pwm_channel_t const channel, u32 const range) {
+	LOG_DEBUG("setting PWM%u channel %u range to %u", controller, channel, range);
 	controller_base(controller)[CHANNEL0_RANGE + (channel * (CHANNEL1_RANGE - CHANNEL0_RANGE))] = range;
 }
 
 void pwm_set_data(pwm_controller_t const controller, pwm_channel_t const channel, u32 const data) {
+	LOG_TRACE("setting PWM%u channel %u data to %u", controller, channel, data);
 	controller_base(controller)[CHANNEL0_DATA + (channel * (CHANNEL1_DATA - CHANNEL0_DATA))] = data;
 }

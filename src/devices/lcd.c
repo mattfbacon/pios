@@ -4,6 +4,7 @@
 
 #include "devices/lcd.h"
 #include "devices/mcp23017.h"
+#include "log.h"
 #include "printf.h"
 #include "sleep.h"
 
@@ -169,16 +170,24 @@ static void send_data(u8 const value) {
 }
 
 void lcd_init() {
+	LOG_DEBUG("initializing LCD");
+
 	mcp23017_init(&device, MCP23017_ADDRESS);
+
+	LOG_TRACE("setting output modes");
 
 	for (usize i = 0; i < sizeof(outputs) / sizeof(outputs[0]); ++i) {
 		set_mode(outputs[i], mcp23017_mode_output);
 	}
 
+	LOG_TRACE("setting input modes");
+
 	for (usize i = 0; i < sizeof(inputs) / sizeof(inputs[0]); ++i) {
 		set_mode(inputs[i], mcp23017_mode_input);
 		set_pull(inputs[i], mcp23017_pull_up);
 	}
+
+	LOG_TRACE("starting initialization handshake");
 
 	write(PIN_ENABLE, false);
 
@@ -196,6 +205,8 @@ void lcd_init() {
 
 	send4(0x2);
 
+	LOG_TRACE("handshake done, setting defaults");
+
 	send_command(COMMAND_SET_FUNCTION | FUNCTION_2LINE);
 
 	send_command(COMMAND_SET_ENTRY_MODE | MODE_LEFT_TO_RIGHT);
@@ -206,6 +217,8 @@ void lcd_init() {
 }
 
 void lcd_set_backlight(bool const red, bool const green, bool const blue) {
+	LOG_DEBUG("setting backlight to red %B green %B blue %B", red, green, blue);
+
 	// this is less for optimization and more for avoiding flickering when setting the backlight
 	u16 pins = (u16)device.outputs[1] << 8 | device.outputs[0];
 	pins &= ~BACKLIGHT_MASK;
@@ -214,14 +227,20 @@ void lcd_set_backlight(bool const red, bool const green, bool const blue) {
 }
 
 void lcd_clear(void) {
+	LOG_DEBUG("clearing display");
+
 	send_command(COMMAND_CLEAR);
 }
 
 void lcd_go_home(void) {
+	LOG_DEBUG("going home");
+
 	send_command(COMMAND_GO_HOME);
 }
 
 void lcd_set_display(bool const on, bool const cursor, bool const blink) {
+	LOG_DEBUG("setting display flags: on=%B cursor=%B blink=%B", on, cursor, blink);
+
 	u8 command = COMMAND_SET_DISPLAY;
 	if (on) {
 		command |= DISPLAY_ON;
@@ -236,15 +255,22 @@ void lcd_set_display(bool const on, bool const cursor, bool const blink) {
 }
 
 void lcd_shift_cursor(lcd_direction_t const direction) {
+	LOG_DEBUG("shifting cursor in direction", direction ? "right" : "left");
+
 	send_command(COMMAND_SHIFT | ((u8)direction << 2));
 }
 
 void lcd_shift_display(lcd_direction_t const direction) {
+	LOG_DEBUG("shifting display in direction", direction ? "right" : "left");
+
 	send_command(COMMAND_SHIFT | SHIFT_DISPLAY | ((u8)direction << 2));
 }
 
 void lcd_set_position(u8 const line, u8 const column) {
+	LOG_DEBUG("setting position to line %u column %u", line, column);
+
 	if (line >= 2 || column >= 40) {
+		LOG_WARN("line or column out of range");
 		return;
 	}
 	u8 const position = line * 0x40 | column;
@@ -252,7 +278,10 @@ void lcd_set_position(u8 const line, u8 const column) {
 }
 
 void lcd_load_character(u8 const index, u8 const data[8]) {
+	LOG_DEBUG("loading custom character %u", index);
+
 	if (index >= 8) {
+		LOG_WARN("index out of range");
 		return;
 	}
 
@@ -266,11 +295,16 @@ void lcd_load_character(u8 const index, u8 const data[8]) {
 }
 
 lcd_buttons_t lcd_get_buttons() {
+	LOG_DEBUG("getting buttons");
+
 	// in hardware the buttons are active-low
-	return ~(read_all() & BUTTON_MASK);
+	lcd_buttons_t const values = ~(read_all() & BUTTON_MASK);
+	LOG_DEBUG("buttons state: %x", values);
+	return values;
 }
 
 void lcd_print(char const ch) {
+	LOG_DEBUG("printing character %c (%b)", ch, ch);
 	send_data(ch);
 }
 
