@@ -11,7 +11,7 @@ void main(void) {
 
 		u64 count = 0;
 
-		while (uart_recv() != '\n') {
+		while (uart_recv() != '\r') {
 			++count;
 		}
 
