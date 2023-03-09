@@ -4,6 +4,7 @@
 #include "init.h"
 #include "sleep.h"
 #include "string.h"
+#include "try.h"
 #include "uart.h"
 
 enum {
@@ -16,19 +17,6 @@ enum {
 	STATUS_BUSY = 0x80,
 	STATUS_CALIBRATED = 0x08,
 };
-
-static void fail(char const* const why) {
-	uart_send_str("failed: ");
-	uart_send_str(why);
-	uart_send_str("\r\n");
-	halt();
-}
-
-static void assert(bool const cond, char const* const msg) {
-	if (!cond) {
-		fail(msg);
-	}
-}
 
 static bool send(u8 const* const buf, u32 const len) {
 	return i2c_send(SENSOR_ADDRESS, buf, len);

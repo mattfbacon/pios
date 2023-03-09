@@ -1,5 +1,6 @@
 #include "devices/mcp23017.h"
 #include "sleep.h"
+#include "try.h"
 #include "uart.h"
 
 enum {
@@ -25,11 +26,6 @@ static u8 shift_for_pin(mcp23017_pin_t const pin) {
 static void io_delay(void) {
 	sleep_micros(250);
 }
-
-#define TRY(_inner) \
-	if (!(_inner)) { \
-		return false; \
-	}
 
 static bool read_u8(i2c_address_t const address, u8 const reg, u8* const value) {
 	TRY(i2c_send(address, &reg, 1))
