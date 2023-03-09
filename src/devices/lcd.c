@@ -294,6 +294,7 @@ void lcd_printf(char const* fmt, ...) {
 	__builtin_va_list args;
 	__builtin_va_start(args, fmt);
 	lcd_vprintf(fmt, args);
+	__builtin_va_end(args);
 }
 
 struct buf_writer {
