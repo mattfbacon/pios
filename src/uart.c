@@ -126,8 +126,13 @@ static void printf_callback(void*, char const ch) {
 	uart_send(ch);
 }
 
-void uart_printf(char const* fmt, ...) {
+void uart_vprintf(char const* const fmt, __builtin_va_list const args) {
+	vdprintf(printf_callback, NULL, fmt, args);
+}
+
+void uart_printf(char const* const fmt, ...) {
 	__builtin_va_list args;
 	__builtin_va_start(args, fmt);
-	vdprintf(printf_callback, NULL, fmt, args);
+	uart_vprintf(fmt, args);
+	__builtin_va_end(args);
 }

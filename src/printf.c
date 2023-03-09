@@ -7,10 +7,20 @@ static void write_str(printf_write_callback_t const write, void* const user, cha
 	}
 }
 
+static void write_bytes_hex(printf_write_callback_t const write, void* const user, u8 const* const buf, usize const len) {
+	char itoa_buf[3];
+	itoa_buf[2] = '\0';
+	for (usize i = 0; i < len; ++i) {
+		u8_to_str_hex(itoa_buf, buf[i]);
+		write_str(write, user, itoa_buf);
+	}
+}
+
 void dprintf(printf_write_callback_t const write, void* user, char const* fmt, ...) {
 	__builtin_va_list args;
 	__builtin_va_start(args, fmt);
 	vdprintf(write, user, fmt, args);
+	__builtin_va_end(args);
 }
 
 void vdprintf(printf_write_callback_t const write, void* const user, char const* fmt, __builtin_va_list args) {
@@ -47,7 +57,7 @@ void vdprintf(printf_write_callback_t const write, void* const user, char const*
 				break;
 			}
 			case 'd': {
-				i64 const arg = (i64) __builtin_va_arg(args, i64);
+				i64 const arg = __builtin_va_arg(args, i64);
 				char itoa_buf[32];
 				i64_to_str(itoa_buf, arg);
 				write_str(write, user, itoa_buf);
@@ -62,16 +72,19 @@ void vdprintf(printf_write_callback_t const write, void* const user, char const*
 				break;
 			}
 			case 'b': {
-				u64 const arg = __builtin_va_arg(args, u64);
-				char itoa_buf[17];
-				u64_to_str_hex(itoa_buf, arg);
-				itoa_buf[16] = '\0';
-				write_str(write, user, itoa_buf + 14);
+				u8 const arg = (u8) __builtin_va_arg(args, u32);
+				write_bytes_hex(write, user, &arg, 1);
 				break;
 			}
 			case 'B': {
 				bool const arg = (bool)__builtin_va_arg(args, u32);
 				write_str(write, user, arg ? "true" : "false");
+				break;
+			}
+			case 'D': {
+				u8 const* const buf = __builtin_va_arg(args, u8 const*);
+				usize const len = __builtin_va_arg(args, usize);
+				write_bytes_hex(write, user, buf, len);
 				break;
 			}
 			case '%': {

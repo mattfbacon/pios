@@ -9,3 +9,8 @@ void u64_to_str_hex(char buf[16], u64 value) {
 		value <<= 4;
 	}
 }
+
+void u8_to_str_hex(char buf[2], u8 const value) {
+	buf[0] = DIGITS[value >> 4];
+	buf[1] = DIGITS[value & 0xf];
+}
