@@ -20,6 +20,8 @@
 // for uart0
 static u32 volatile* const BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x201'000);
 
+static bool initialized = false;
+
 enum {
 	TX_PIN = 14,
 	RX_PIN = 15,
@@ -81,13 +83,17 @@ void uart_init(void) {
 	BASE[INTERRUPT_ENABLE] = 0;
 
 	BASE[CONTROL] = ENABLE_DEVICE | ENABLE_RECEIVE | ENABLE_TRANSMIT;
+	initialized = true;
 }
 
 bool uart_can_send(void) {
-	return !(BASE[STATUS] & TRANSMIT_FIFO_FULL);
+	return initialized && !(BASE[STATUS] & TRANSMIT_FIFO_FULL);
 }
 
 void uart_send(char const ch) {
+	if (!initialized) {
+		uart_init();
+	}
 	while (!uart_can_send()) {
 		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
@@ -100,6 +106,9 @@ bool uart_can_recv(void) {
 }
 
 u8 uart_recv(void) {
+	if (!initialized) {
+		uart_init();
+	}
 	while (!uart_can_recv()) {
 		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
