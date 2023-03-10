@@ -1,3 +1,3 @@
 #pragma once
 
-void halt(void);
+void halt(void) __attribute__((noreturn));
