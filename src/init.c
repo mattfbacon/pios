@@ -1,10 +1,13 @@
 #include "exception.h"
 #include "gpio.h"
 #include "log.h"
+#include "malloc.h"
 #include "uart.h"
 
 void standard_init(void) {
 	exception_init();
+
+	malloc_init();
 
 	uart_init();
 	// clear the terminal
