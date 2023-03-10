@@ -15,3 +15,5 @@ typedef u64 usize;
 typedef i64 isize;
 
 #define NULL ((void*)0)
+
+#define offsetof __builtin_offsetof
