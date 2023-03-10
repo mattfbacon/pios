@@ -18,7 +18,7 @@ typedef enum mailbox_clock {
 	mailbox_clock_pwm = 10,
 } mailbox_clock_t;
 
-extern u32 volatile mailbox[64];
+extern u32 volatile __attribute__((aligned(16))) mailbox[64];
 
 enum {
 	MAILBOX_REQUEST = 0,
