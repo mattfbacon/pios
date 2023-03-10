@@ -30,7 +30,7 @@ static struct {
 	u32 line_control;
 	u32 control;
 	u32 interrupt_fifo_level;
-	u32 interrupt_mask;
+	u32 interrupt_enable;
 	u32 raw_interrupt_status;
 	u32 masked_interrupt_status;
 	u32 interrupt_clear;
