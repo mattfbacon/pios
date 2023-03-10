@@ -23,6 +23,8 @@ extern u32 volatile __attribute__((aligned(16))) mailbox[64];
 enum {
 	MAILBOX_REQUEST = 0,
 
+	MAILBOX_TAG_GET_ARM_MEMORY = 0x1'0005,
+
 	MAILBOX_TAG_GET_CLOCK_RATE = 0x3'0002,
 	MAILBOX_TAG_SET_CLOCK_RATE = 0x3'8002,
 
@@ -39,5 +41,6 @@ enum {
 
 bool mailbox_call(mailbox_channel_t const channel);
 
+bool mailbox_get_arm_memory(u32* base, u32* size);
 bool mailbox_get_clock_rate(mailbox_clock_t clock, u32* ret);
 bool mailbox_set_clock_rate(mailbox_clock_t clock, u32 rate);

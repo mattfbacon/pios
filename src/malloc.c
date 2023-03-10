@@ -1,13 +1,9 @@
 #include "base.h"
+#include "mailbox.h"
 #include "malloc.h"
+#include "try.h"
 
 extern char _end[];
-
-// The program/data end, aligned to a block.
-// Unfortunately this needs to be a macro since the `(u64)_end` part is not an integer constant.
-#define HEAP_START ((u64)_end)
-#define HEAP_END DEVICE_BASE
-#define HEAP_SIZE (HEAP_END - HEAP_START)
 
 enum {
 	BLOCK_ALIGNMENT = 8u,
@@ -32,9 +28,15 @@ struct block_header {
 static struct block_header* head_block = NULL;
 
 void malloc_init(void) {
-	head_block = (struct block_header*)HEAP_START;
+	u32 base, size;
+	assert(mailbox_get_arm_memory(&base, &size), "getting ARM memory region");
+	u32 const heap_start = (u32)(usize)_end;
+	u32 const arm_memory_end = base + size;
+	u32 const heap_size = arm_memory_end - heap_start;
+
+	head_block = (struct block_header*)(usize)heap_start;
 	head_block->next = (u32)(usize)NULL;
-	head_block->_size = ((HEAP_SIZE - sizeof(struct block_header)) & ADDRESS_MASK) | FREE;
+	head_block->_size = ((heap_size - sizeof(struct block_header)) & ADDRESS_MASK) | FREE;
 }
 
 static usize align_to(usize value, usize const alignment) {

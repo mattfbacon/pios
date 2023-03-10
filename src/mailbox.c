@@ -41,6 +41,26 @@ bool mailbox_call(mailbox_channel_t const channel) {
 	}
 }
 
+bool mailbox_get_arm_memory(u32* const base, u32* const size) {
+	LOG_DEBUG("getting ARM memory");
+
+	mailbox[0] = 8 * sizeof(u32);
+	mailbox[1] = MAILBOX_REQUEST;
+	mailbox[2] = MAILBOX_TAG_GET_ARM_MEMORY;
+	mailbox[3] = 2 * sizeof(u32);
+	mailbox[4] = 0;
+	// mailbox[5] = base address
+	// mailbox[6] = size
+	mailbox[7] = MAILBOX_TAG_LAST;
+
+	TRY(mailbox_call(mailbox_channel_tags))
+
+	*base = mailbox[5];
+	*size = mailbox[6];
+
+	return true;
+}
+
 bool mailbox_get_clock_rate(mailbox_clock_t const clock, u32* const ret) {
 	LOG_DEBUG("getting rate of clock %u", clock);
 
