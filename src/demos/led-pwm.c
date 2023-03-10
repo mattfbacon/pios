@@ -27,7 +27,7 @@ void main(void) {
 
 	pwm_set_range(pwm_controller_0, pwm_channel_1, 1'000);
 	pwm_set_data(pwm_controller_0, pwm_channel_1, 0);
-	pwm_init_channel(pwm_controller_0, pwm_channel_1, pwm_channel_enabled | pwm_channel_use_m_s_algorithm);
+	pwm_init_channel(pwm_controller_0, pwm_channel_1, pwm_channel_enabled);
 
 	LOG_INFO("sending data");
 
