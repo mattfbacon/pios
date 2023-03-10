@@ -12,57 +12,53 @@
 
 #include "base.h"
 #include "gpio.h"
+#include "halt.h"
 #include "mailbox.h"
 #include "printf.h"
 #include "sleep.h"
 #include "uart.h"
 
-// for uart0
-static u32 volatile* const BASE = (u32 volatile*)(PERIPHERAL_BASE + 0x201'000);
+static struct {
+	u32 fifo;
+	u32 _res0[5];
+	u32 status;
+	u32 _res1[2];
+	// divisor = divisor_integer + divisor_fraction / 64
+	// divisor = base clock / (16 * desired baud rate)
+	u32 baud_divisor_integer;
+	u32 baud_divisor_fraction;
+	u32 line_control;
+	u32 control;
+	u32 interrupt_fifo_level;
+	u32 interrupt_mask;
+	u32 raw_interrupt_status;
+	u32 masked_interrupt_status;
+	u32 interrupt_clear;
+	// There are more registers but we don't use them.
+} volatile* const UART0 = (void volatile*)(PERIPHERAL_BASE + 0x201'000);
 
 static bool initialized = false;
 
 enum {
+	// This cannot necessarily just be set to any value.
+	// There is a certain minimum for the hardware clock rate somewhere between 460800 and 921600.
+	// Below that point, you must use the UART's dividers to further lower the clock rate.
+	// For example, to get 9600 baud, you could keep the current clock rate, but set the divisor to 115200 / 9600 = 12.
+	BAUD = 115'200,
+
 	TX_PIN = 14,
 	RX_PIN = 15,
 
-	FIFO = 0,
+	STATUS_TRANSMIT_FIFO_FULL = 1 << 5,
+	STATUS_RECEIVE_FIFO_EMPTY = 1 << 4,
 
-	STATUS = 6,
-	TRANSMIT_FIFO_FULL = 1 << 5,
-	RECEIVE_FIFO_EMPTY = 1 << 4,
+	LINE_CONTROL_ENABLE_FIFOS = 1 << 4,
+	LINE_CONTROL_WORD_LENGTH_8BIT = 1 << 5 | 1 << 6,
 
-	BAUD_INTEGER = 9,
-	BAUD_FRACTION = 10,
-
-	LINE_CONTROL = 11,
-	ENABLE_FIFOS = 1 << 4,
-	WORD_LENGTH_8BIT = 1 << 5 | 1 << 6,
-
-	CONTROL = 12,
-	ENABLE_DEVICE = 1 << 0,
-	ENABLE_TRANSMIT = 1 << 8,
-	ENABLE_RECEIVE = 1 << 9,
-
-	INTERRUPT_FIFO_LEVEL = 13,
-	LEVEL_RECEIVE_1_8 = 0,
-	LEVEL_TRANSMIT_1_8 = 0,
-
-	INTERRUPT_ENABLE = 14,
-	INTERRUPT_RECEIVE = 1 << 4,
-	INTERRUPT_TRANSMIT = 1 << 5,
-
-	INTERRUPT_CONTROL = 17,
-	CLEAR_INTERRUPTS = 0x7ff,
+	CONTROL_ENABLE_DEVICE = 1 << 0,
+	CONTROL_ENABLE_TRANSMIT = 1 << 8,
+	CONTROL_ENABLE_RECEIVE = 1 << 9,
 };
-
-u32 div_rounded(u32 const dividend, u32 const divisor) {
-	return (dividend + (divisor / 2)) / divisor;
-}
-
-u32 baud_to_reg_value(u32 const baud) {
-	return div_rounded(500'000'000, baud * 8) - 1;
-}
 
 void uart_init(void) {
 	gpio_set_mode(TX_PIN, gpio_mode_alt0);
@@ -70,50 +66,50 @@ void uart_init(void) {
 	gpio_set_mode(RX_PIN, gpio_mode_alt0);
 	gpio_set_pull(RX_PIN, gpio_pull_floating);
 
-	BASE[CONTROL] = 0;
-	BASE[INTERRUPT_CONTROL] = CLEAR_INTERRUPTS;
+	UART0->control = 0;
+	UART0->interrupt_clear = 0xffff'ffff;
 
-	mailbox_set_clock_rate(mailbox_clock_uart, 3'000'000);
+	mailbox_set_clock_rate(mailbox_clock_uart, BAUD * 16);
 
-	BASE[BAUD_INTEGER] = 1;
-	BASE[BAUD_FRACTION] = 40;
+	UART0->baud_divisor_integer = 1;
+	UART0->baud_divisor_fraction = 0;
 
-	BASE[LINE_CONTROL] = ENABLE_FIFOS | WORD_LENGTH_8BIT;
+	UART0->line_control = LINE_CONTROL_ENABLE_FIFOS | LINE_CONTROL_WORD_LENGTH_8BIT;
 
-	BASE[INTERRUPT_ENABLE] = 0;
-
-	BASE[CONTROL] = ENABLE_DEVICE | ENABLE_RECEIVE | ENABLE_TRANSMIT;
+	UART0->control = CONTROL_ENABLE_DEVICE | CONTROL_ENABLE_RECEIVE | CONTROL_ENABLE_TRANSMIT;
 	initialized = true;
 }
 
 bool uart_can_send(void) {
-	return initialized && !(BASE[STATUS] & TRANSMIT_FIFO_FULL);
+	return !initialized || !(UART0->status & STATUS_TRANSMIT_FIFO_FULL);
 }
 
 void uart_send(char const ch) {
 	if (!initialized) {
-		uart_init();
+		return;
 	}
+
 	while (!uart_can_send()) {
 		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
 
-	BASE[FIFO] = ch;
+	UART0->fifo = ch;
 }
 
 bool uart_can_recv(void) {
-	return !(BASE[STATUS] & RECEIVE_FIFO_EMPTY);
+	return initialized && !(UART0->status & STATUS_RECEIVE_FIFO_EMPTY);
 }
 
 u8 uart_recv(void) {
 	if (!initialized) {
-		uart_init();
+		halt();
 	}
+
 	while (!uart_can_recv()) {
 		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
 
-	return BASE[FIFO];
+	return UART0->fifo;
 }
 
 void uart_send_str(char const* str) {
