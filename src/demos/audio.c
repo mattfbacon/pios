@@ -31,7 +31,7 @@ void main(void) {
 	// This song is called "Bitshift Variations in C Minor" if you're curious. It's a really cool way of generating a fun song in a very short amount of code.
 	for (u32 i = 0;; ++i) {
 		u32 const n = i >> 14;
-		u32 const s = i >> 14;
+		u32 const s = i >> 17;
 		u8 const this_data = g(i, 1, n, 12) + g(i, s, n ^ i >> 13, 10) + g(i, s / 3, n + ((i >> 11) % 3), 10) + g(i, s / 5, 8 + n - ((i >> 10) % 3), 9);
 
 		// The audio jack has two channels so we write the data twice.
