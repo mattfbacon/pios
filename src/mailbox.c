@@ -56,7 +56,7 @@ bool mailbox_get_clock_rate(mailbox_clock_t const clock, u32* const ret) {
 	TRY(mailbox_call(mailbox_channel_tags))
 
 	u32 const rate = mailbox[6];
-	LOG_TRACE("clock %u rate is %u", clock, rate);
+	LOG_TRACE("clock %u rate has been set to %u", clock, rate);
 	*ret = rate;
 
 	return true;
