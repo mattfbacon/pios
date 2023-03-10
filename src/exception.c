@@ -1,4 +1,5 @@
 #include "base.h"
+#include "exception.h"
 #include "halt.h"
 #include "log.h"
 #include "timer.h"
@@ -46,4 +47,14 @@ void exception_handle_el1_irq(void) {
 	if (pending0 & IRQ0_TIMER1) {
 		timer_acknowledge(1);
 	}
+}
+
+exception_mask_t exception_get_mask(void) {
+	u64 ret;
+	asm volatile("mrs %0, daif" : "=r"(ret));
+	return (exception_mask_t)ret;
+}
+
+void exception_set_mask(exception_mask_t const mask) {
+	asm volatile("msr daif, %0" ::"r"((u64)mask));
 }

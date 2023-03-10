@@ -1,4 +1,5 @@
 #include "base.h"
+#include "exception.h"
 #include "sleep.h"
 #include "timer.h"
 
@@ -39,14 +40,8 @@ static void sleep_micros_interrupts(u64 const micros) {
 	}
 }
 
-static bool interrupts_enabled(void) {
-	u64 daif;
-	asm("mrs %0, daif" : "=r"(daif));
-	return daif & (1 << 1);
-}
-
 void sleep_micros(u64 const micros) {
-	if (interrupts_enabled() && micros >= SLEEP_MIN_MICROS_FOR_INTERRUPTS) {
+	if (!(exception_get_mask() & exception_mask_irq) && micros >= SLEEP_MIN_MICROS_FOR_INTERRUPTS) {
 		sleep_micros_interrupts(micros);
 	} else {
 		sleep_micros_spin(micros);

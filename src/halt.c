@@ -1,8 +1,8 @@
+#include "exception.h"
 #include "halt.h"
 
 void halt(void) {
-	// mask IRQs so `wfe` doesn't finish as often
-	asm volatile("msr daifset, #0b0010");
+	exception_set_mask(exception_mask_all);
 	while (true) {
 		asm volatile("wfe");
 	}
