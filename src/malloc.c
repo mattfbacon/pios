@@ -1,4 +1,4 @@
-// TODO explore using an XOR linked list for the block list so we can merge blocks backward as well.
+// TODO explore using a doubly linked list for the block list so we can merge blocks backward as well.
 
 #include "base.h"
 #include "mailbox.h"
