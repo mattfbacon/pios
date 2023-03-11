@@ -154,6 +154,7 @@ enum emmc_command {
 	command_io_set_operating_conditions = MAKE_EMMC_COMMAND(RESPONSE_136, 0, 5),
 	command_select_card = MAKE_EMMC_COMMAND(RESPONSE_48_BUSY, 1, 7),
 	command_send_if_condition = MAKE_EMMC_COMMAND(RESPONSE_48, 1, 8),
+	command_get_card_specific_data = MAKE_EMMC_COMMAND(RESPONSE_136, 1, 9),
 	command_set_block_length = MAKE_EMMC_COMMAND(RESPONSE_48, 1, 16),
 	command_read_block = MAKE_EMMC_COMMAND(RESPONSE_48, 1, 17) | CMD_CARD_TO_HOST | CMD_IS_DATA,
 	command_read_multiple = MAKE_EMMC_COMMAND(RESPONSE_48, 1, 18) | CMD_BLOCK_COUNTER | CMD_AUTO_12 | CMD_CARD_TO_HOST | CMD_MULTIBLOCK | CMD_IS_DATA,
@@ -173,6 +174,8 @@ static struct {
 	u32 last_error;
 	// High-capacity cards use block-based addressing, while normal-capacity cards use byte-based addressing, so we need to keep track of what kind our card is.
 	bool high_capacity;
+	// In blocks.
+	u32 capacity;
 } device = { 0 };
 
 static bool wait_reg_mask(u32 volatile* const reg, u32 const mask, bool const wanted_value, u32 const timeout_millis) {
@@ -479,6 +482,25 @@ static void enable_bus_power(void) {
 	EMMC->control[0] |= CTRL0_RPI4_ENABLE_BUS_POWER;
 }
 
+static bool check_card_specific_data(void) {
+	TRY_MSG(emmc_command(command_get_card_specific_data, device.relative_card_address, TIMEOUT_DEFAULT))
+
+	if (!device.high_capacity) {
+		LOG_ERROR("standard-capacity cards not yet implemented");
+		return false;
+	}
+
+	// Bits 48..70 of the whole response.
+	// The controller cuts off the 7-bit CRC + 1 bit so we subtract 8 from that offset.
+	u32 const capacity_raw = (device.last_response[1] >> 8) & ((1 << 22) - 1);
+	// Actual capacity in bytes = (raw capacity + 1) * 512KiB
+	// This implementation must be adjusted if the block size changes.
+	_Static_assert(EMMC_BLOCK_SIZE == 512, "The implementation must be adjusted to account for the new block size.");
+	device.capacity = (capacity_raw + 1) * 1024;
+
+	return true;
+}
+
 static bool emmc_card_reset(void) {
 	LOG_DEBUG("resetting card");
 
@@ -514,6 +536,8 @@ static bool emmc_card_reset(void) {
 	sleep_micros(10'000);
 
 	TRY_MSG(check_rca())
+
+	TRY_MSG(check_card_specific_data())
 
 	TRY_MSG(select_card())
 
@@ -571,6 +595,10 @@ bool emmc_write(u8 const* const buffer, u32 const num_blocks, u32 const start_bl
 	LOG_DEBUG("writing %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
 	// casting away const because the buffer will not be modified in the write mode
 	return do_data_command(true, (u8*)buffer, num_blocks, start_block);
+}
+
+u32 emmc_capacity(void) {
+	return device.capacity;
 }
 
 bool emmc_init(void) {

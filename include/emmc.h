@@ -5,6 +5,8 @@ enum {
 };
 
 bool emmc_init(void);
+// In blocks.
+u32 emmc_capacity(void);
 // `num_blocks` can be at most 65535.
 bool emmc_read(u8* buffer, u32 num_blocks, u32 block_start);
 // `num_blocks` can be at most 65535.
