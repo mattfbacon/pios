@@ -1,3 +1,10 @@
+// # Resources
+//
+// - http://yannik520.github.io/sdio.html
+// - https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf (for RPi3 but the EMMC controller is the same except for the base address)
+// - https://web.archive.org/web/20170107083932/http://lib.store.yahoo.net/lib/yhst-92940736592539/ts4gsdhc150.pdf
+// - https://web.archive.org/web/20160301223058/http://www.circlemud.org/jelson/sdcard/SDCardStandardv1.9.pdf
+
 #include "base.h"
 #include "emmc.h"
 #include "gpio.h"
@@ -92,6 +99,12 @@ enum {
 
 	STATUS_COMMAND_INHIBIT = 1 << 0,
 	STATUS_DATA_INHIBIT = 1 << 1,
+
+	CARD_STATUS_READY_FOR_DATA = 1 << 8,
+	CARD_STATUS_CURRENT_STATE_SHIFT = 9,
+	CARD_STATUS_CURRENT_STATE_MASK = 0xf,
+	CARD_STATUS_CURRENT_STATE_STANDBY = 3,
+	CARD_STATUS_CURRENT_STATE_TRANSFER = 4,
 
 	INTERRUPT_COMMAND_DONE = 1 << 0,
 	INTERRUPT_DATA_DONE = 1 << 1,
@@ -440,8 +453,7 @@ static bool check_rca(void) {
 
 	device.relative_card_address = device.last_response[0] & RCA_MASK;
 
-	// XXX what does this bit mean?
-	TRY_MSG(device.last_response[0] & (1 << 8))
+	TRY_MSG(device.last_response[0] & CARD_STATUS_READY_FOR_DATA)
 
 	return true;
 }
@@ -451,12 +463,10 @@ static bool select_card(void) {
 
 	TRY_MSG(emmc_command(command_select_card, device.relative_card_address, TIMEOUT_DEFAULT))
 
-	// XXX where is this bitfield documented?
-	u32 const status = (device.last_response[0] >> 9) & 0xF;
+	u32 const status = (device.last_response[0] >> CARD_STATUS_CURRENT_STATE_SHIFT) & CARD_STATUS_CURRENT_STATE_MASK;
 
-	// XXX what are the meanings of these special values?
-	if (status != 3 && status != 4) {
-		LOG_ERROR("invalid status %x in response to RCA command", status);
+	if (status != CARD_STATUS_CURRENT_STATE_STANDBY && status != CARD_STATUS_CURRENT_STATE_TRANSFER) {
+		LOG_ERROR("invalid current-state %u in response to RCA command", status);
 		return false;
 	}
 
