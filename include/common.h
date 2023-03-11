@@ -17,3 +17,4 @@ typedef i64 isize;
 #define NULL ((void*)0)
 
 #define offsetof __builtin_offsetof
+#define alignof __alignof__
