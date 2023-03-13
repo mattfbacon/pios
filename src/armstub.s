@@ -80,10 +80,8 @@ _start:
 
 	// bl setup_gic
 
-	/*
-	 * Set up SCTLR_EL2
-	 * All set bits below are res1. LE, no WXN/I/SA/C/A/M
-	 */
+	// Set up SCTLR_EL2
+	// All set bits below are res1. LE, no WXN/I/SA/C/A/M
 	ldr x0, =0x30c50830
 	msr SCTLR_EL2, x0
 
