@@ -295,11 +295,17 @@ static bool do_data_transfer(emmc_marshaled_command_t const command) {
 			return false;
 		}
 
-		// I would prefer to put the `if (write)` inside the loop, but LICM doesn't seem to be able to optimize it.
-		// This collapses 128 branches to 1 in an incredibly hot loop.
+		// I would prefer to put the branches inside the loop, but LICM doesn't seem to be able to optimize it.
+		// This collapses 128/256 branches to 1 in an incredibly hot loop.
 		if (write) {
-			for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
-				EMMC->data = *data++;
+			if (data != NULL) {
+				for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
+					EMMC->data = *data++;
+				}
+			} else {
+				for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
+					EMMC->data = 0;
+				}
 			}
 		} else {
 			for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
