@@ -264,7 +264,6 @@ static bool emmc_setup_clock(void) {
 }
 
 static void set_last_error(u32 const interrupt_flags) {
-	LOG_ERROR("error occurred: flags %x", interrupt_flags);
 	device.last_error = interrupt_flags & INTERRUPT_ERROR_MASK;
 }
 
