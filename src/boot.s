@@ -39,6 +39,13 @@
 .equ CPTR_ALLOW_SVE, 0b11 << 16
 .equ CPTR_VALUE, CPTR_ALLOW_SVE
 
+.equ SPSR_EL3_D, 1 << 9
+.equ SPSR_EL3_A, 1 << 8
+.equ SPSR_EL3_I, 1 << 7
+.equ SPSR_EL3_F, 1 << 6
+.equ SPSR_EL3_MODE_EL2H, 9
+.equ SPSR_EL3_VAL, SPSR_EL3_D | SPSR_EL3_A | SPSR_EL3_I | SPSR_EL3_F | SPSR_EL3_MODE_EL2H
+
 .global _start
 .extern standard_init
 .extern main
@@ -46,8 +53,24 @@
 _start:
 	// armstub has already ensured that only core 0 gets here
 
-	// switch to EL1
+	// Switch to EL2.
+	adr x0, exception_vector_table
+	msr vbar_el3, x0
 
+	// Set up SCTLR_EL2
+	// All set bits below are res1. LE, no WXN/I/SA/C/A/M
+	ldr x0, =0x30c50830
+	msr SCTLR_EL2, x0
+
+	mov x0, #SPSR_EL3_VAL
+	msr spsr_el3, x0
+
+	adr x0, .in_el2
+	msr elr_el3, x0
+	eret
+.in_el2:
+
+	// Switch to EL1.
 	ldr x4, =SCTLR_VALUE
 	msr sctlr_el1, x4
 
@@ -65,6 +88,9 @@ _start:
 
 	adr x4, .in_el1
 	msr elr_el2, x4
+
+	adr x4, exception_vector_table
+	msr vbar_el2, x4
 
 	eret
 

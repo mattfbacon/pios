@@ -21,13 +21,6 @@
 
 .equ CPUECTLR_EL1_SMPEN, 1 << 6
 
-.equ SPSR_EL3_D, 1 << 9
-.equ SPSR_EL3_A, 1 << 8
-.equ SPSR_EL3_I, 1 << 7
-.equ SPSR_EL3_F, 1 << 6
-.equ SPSR_EL3_MODE_EL2H, 9
-.equ SPSR_EL3_VAL, SPSR_EL3_D | SPSR_EL3_A | SPSR_EL3_I | SPSR_EL3_F | SPSR_EL3_MODE_EL2H
-
 .equ GICC_CTRLR, 0x0
 .equ GICC_PMR, 0x4
 .equ INTERRUPT_NUMBER, 0x8  // Number of interrupt enable registers (256 total irqs)
@@ -79,19 +72,6 @@ _start:
 	msr S3_1_C15_C2_1, x0
 
 	// bl setup_gic
-
-	// Set up SCTLR_EL2
-	// All set bits below are res1. LE, no WXN/I/SA/C/A/M
-	ldr x0, =0x30c50830
-	msr SCTLR_EL2, x0
-
-	// Switch to EL2
-	mov x0, #SPSR_EL3_VAL
-	msr spsr_el3, x0
-	adr x0, in_el2
-	msr elr_el3, x0
-	eret
-in_el2:
 
 	mrs x6, MPIDR_EL1
 	and x6, x6, #0x3
