@@ -18,4 +18,5 @@
 -nostdinc
 -mcpu=cortex-a72
 -iquoteinclude
+-isystemsqlite
 -includeinclude/common.h

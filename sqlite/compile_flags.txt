@@ -1,0 +1,11 @@
+-Wall
+--target=aarch64-unknown-none
+-Wextra
+-O2
+-std=gnu2x
+-ffreestanding
+-nostdinc
+-mcpu=cortex-a72
+-isystem.
+-DSQLITE_THREADSAFE=0
+-DSQLITE_OS_OTHER=1
