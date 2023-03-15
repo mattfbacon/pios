@@ -11,7 +11,7 @@ void main(void) {
 	LOG_INFO("EMMC disk initialized");
 
 	LOG_INFO("reading from card");
-	assert(emmc_read(buf, sizeof(buf) / EMMC_BLOCK_SIZE, 2'000'000), "reading from card");
+	assert(emmc_read(buf, 2'000'000, sizeof(buf) / EMMC_BLOCK_SIZE), "reading from card");
 
 	LOG_INFO("read done, bytes are as follows: %D", buf, sizeof(buf));
 
@@ -21,10 +21,10 @@ void main(void) {
 	}
 
 	LOG_INFO("writing to card");
-	assert(emmc_write(buf, sizeof(buf) / EMMC_BLOCK_SIZE, 2'000'000), "writing to card");
+	assert(emmc_write(buf, 2'000'000, sizeof(buf) / EMMC_BLOCK_SIZE), "writing to card");
 
 	LOG_INFO("reading back from card");
-	assert(emmc_read(buf, sizeof(buf) / EMMC_BLOCK_SIZE, 2'000'000), "reading back from card");
+	assert(emmc_read(buf, 2'000'000, sizeof(buf) / EMMC_BLOCK_SIZE), "reading back from card");
 
 	LOG_INFO("readback done, bytes are as follows: %D", buf, sizeof(buf));
 }

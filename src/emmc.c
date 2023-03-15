@@ -586,12 +586,12 @@ bool do_data_command(bool const write, u8* const buffer, u32 const num_blocks, u
 	return false;
 }
 
-bool emmc_read(u8* const buffer, u32 const num_blocks, u32 const start_block) {
+bool emmc_read(u8* const buffer, u32 const start_block, u32 const num_blocks) {
 	LOG_DEBUG("reading %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
 	return do_data_command(false, buffer, num_blocks, start_block);
 }
 
-bool emmc_write(u8 const* const buffer, u32 const num_blocks, u32 const start_block) {
+bool emmc_write(u8 const* const buffer, u32 const start_block, u32 const num_blocks) {
 	LOG_DEBUG("writing %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
 	// casting away const because the buffer will not be modified in the write mode
 	return do_data_command(true, (u8*)buffer, num_blocks, start_block);
