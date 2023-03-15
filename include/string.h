@@ -1,15 +1,34 @@
 #pragma once
 
-inline void memcpy(char* const out, char const* const in, usize const len) {
+inline void memset(void* const data_, u8 const fill, usize const length) {
+	char* const data = data_;
+	for (usize i = 0; i < length; ++i) {
+		data[i] = fill;
+	}
+}
+
+inline void memcpy(void* const out_, void const* const in_, usize const len) {
+	char* const out = out_;
+	char const* const in = in_;
 	for (usize i = 0; i < len; ++i) {
 		out[i] = in[i];
 	}
 }
 
-inline void memcpy_volatile(char volatile* const out, char const volatile* const in, usize const len) {
+inline void memcpy_volatile(void volatile* const out_, void const volatile* const in_, usize const len) {
+	char volatile* const out = out_;
+	char const volatile* const in = in_;
 	for (usize i = 0; i < len; ++i) {
 		out[i] = in[i];
 	}
+}
+
+inline int strcmp(char const* s1, char const* s2) {
+	while (*s1 != '\0' && *s1 == *s2) {
+		++s1;
+		++s2;
+	}
+	return *s1 - *s2;
 }
 
 // does add a NUL terminator as the string's length may vary.
