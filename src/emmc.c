@@ -558,6 +558,11 @@ static bool emmc_card_reset(void) {
 }
 
 bool do_data_command(bool const write, u8* const buffer, u32 const num_blocks, u32 block_start) {
+	if (num_blocks == 0) {
+		LOG_DEBUG("data command with 0 blocks, returning early");
+		return true;
+	}
+
 	if (!device.high_capacity) {
 		block_start *= EMMC_BLOCK_SIZE;
 	}
