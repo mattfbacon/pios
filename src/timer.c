@@ -22,7 +22,6 @@ u64 timer_get_micros(void) {
 	return (u64)hi << 32 | (u64)lo;
 }
 
-void timer_set_compare(u32 const end_micros) {
-	// Only timer 1 is available to users.
-	TIMER_BASE->compare[1] = end_micros;
+void timer_set_compare(u8 const timer, u32 const end_micros) {
+	TIMER_BASE->compare[timer] = end_micros;
 }

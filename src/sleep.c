@@ -34,7 +34,7 @@ static void sleep_micros_interrupts(u64 const micros) {
 	u64 const end = timer_get_micros() + micros;
 
 	// this truncates, which may cause more interrupts than necessary, but will not break the function, because we check for `get_counter() < end`.
-	timer_set_compare((u32)end);
+	timer_set_compare(1, (u32)end);
 	while (timer_get_micros() < end) {
 		asm volatile("wfe");
 	}
