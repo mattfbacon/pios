@@ -26,6 +26,7 @@ KERNEL_SOURCES := \
 	emmc.c \
 	log.c \
 	malloc.c \
+	gpt.c \
 	random.c \
 
 ARMSTUB_SOURCES := armstub.s
