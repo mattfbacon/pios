@@ -267,3 +267,7 @@ void* realloc(void* const old, usize new_size) {
 
 	return new_raw;
 }
+
+usize malloc_usable_size(void* const address) {
+	return block_size(block_from_data(address));
+}
