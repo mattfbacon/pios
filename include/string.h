@@ -23,6 +23,22 @@ inline void memcpy_volatile(void volatile* const out_, void const volatile* cons
 	}
 }
 
+inline void memmove(void* const dest_, void const* const src_, usize const length) {
+	if (dest_ < src_) {
+		// Moving characters backward, so copy forward.
+		memcpy(dest_, src_, length);
+	} else if (dest_ > src_) {
+		// Moving characters forward, so copy backward.
+		char* const dest = dest_;
+		char const* const src = src_;
+		for (usize i = length; i > 0; --i) {
+			dest[i - 1] = src[i - 1];
+		}
+	} else {
+		// Not moving at all, so do nothing.
+	}
+}
+
 inline int strcmp(char const* s1, char const* s2) {
 	while (*s1 != '\0' && *s1 == *s2) {
 		++s1;
