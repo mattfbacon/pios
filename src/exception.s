@@ -50,8 +50,6 @@
 .macro invalid_entry
 .p2align 7
 	mov x0, #((. - exception_vector_table) >> 7)
-	mrs x1, esr_el1
-	mrs x2, elr_el1
 
 	bl exception_handle_invalid
 .endm

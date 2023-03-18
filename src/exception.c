@@ -35,8 +35,13 @@ void exception_init(void) {
 }
 
 // only exposed to assembly
-void exception_handle_invalid(u64 const index, u64 const syndrome, u64 const address) {
-	LOG_FATAL("invalid exception caught, index = %x, syndrome = 0x%x, address = 0x%x", index, syndrome, address);
+void exception_handle_invalid(u64 const index) {
+	u64 current_el, syndrome, address, fault_address;
+	asm("mrs %0, CurrentEL" : "=r"(current_el));
+	asm("mrs %0, esr_el1" : "=r"(syndrome));
+	asm("mrs %0, elr_el1" : "=r"(address));
+	asm("mrs %0, far_el1" : "=r"(fault_address));
+	LOG_FATAL("invalid exception caught, current EL = %u, index = %x, syndrome = 0x%x, address = 0x%x, fault address = 0x%x", current_el >> 2, index, syndrome, address, fault_address);
 	halt();
 }
 
