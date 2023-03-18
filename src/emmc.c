@@ -584,16 +584,7 @@ bool do_data_command(bool const write, u8* const buffer, u32 const num_blocks, u
 		}
 	}
 
-	for (int retry = 0; retry < 3; ++retry) {
-		if (emmc_command(command, block_start, 5'000)) {
-			return true;
-		}
-
-		LOG_WARN("retrying data command");
-	}
-
-	LOG_WARN("giving up data command");
-	return false;
+	return emmc_command(command, block_start, 5'000);
 }
 
 bool emmc_read(u8* const buffer, u32 const start_block, u32 const num_blocks) {
@@ -627,15 +618,5 @@ bool emmc_init(void) {
 	gpio_set_mode(51, gpio_mode_alt3);
 	gpio_set_mode(52, gpio_mode_alt3);
 
-	for (int i = 0; i < 10; i++) {
-		if (emmc_card_reset()) {
-			return true;
-		}
-
-		LOG_WARN("failed to reset card, waiting...");
-		sleep_micros(100'000);
-	}
-
-	LOG_ERROR("failed to reset card");
-	return false;
+	return emmc_card_reset();
 }
