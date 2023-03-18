@@ -172,6 +172,9 @@ void* malloc(usize size) {
 		try_split(block, size);
 
 		block->prev_and_flags &= ~FLAGS_FREE;
+		if (head_block == block) {
+			head_block = block_next(block);
+		}
 		return block->data;
 	}
 
@@ -185,6 +188,10 @@ void free(void* const address) {
 
 	struct block_header* const block = block_from_data(address);
 	block->prev_and_flags |= FLAGS_FREE;
+
+	if (block < head_block) {
+		head_block = block;
+	}
 
 	try_merge(block, true);
 }
@@ -264,6 +271,9 @@ void* realloc(void* const old, usize new_size) {
 
 	// Free the old block, but don't do any merging because this is as merged as it can get.
 	merged_block->prev_and_flags |= FLAGS_FREE;
+	if (merged_block < head_block) {
+		head_block = merged_block;
+	}
 
 	return new_raw;
 }
