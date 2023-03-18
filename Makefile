@@ -29,6 +29,7 @@ KERNEL_SOURCES := \
 	gpt.c \
 	random.c \
 	time.c \
+	devices/ds3231.c \
 
 ARMSTUB_SOURCES := armstub.s
 
