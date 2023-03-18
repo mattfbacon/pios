@@ -34,6 +34,71 @@ enum {
 // Matching with `LEAP_EPOCH`, starts with March.
 static u8 month_days[MONTHS_PER_YEAR] = { 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29 };
 
+static time_t year_to_secs(i64 const year, bool* const is_leap) {
+	// The years 1902..=1938.
+	if (year >= 2 && year <= 138) {
+		i32 const year_1968 = year - 68;
+
+		i32 leaps = (year_1968 / 4) * LEAPS_PER_4;
+		*is_leap = year_1968 % 4 == 0;
+		if (*is_leap) {
+			--leaps;
+		}
+
+		return SECONDS_PER_YEAR * (year - 70) + SECONDS_PER_DAY * leaps;
+	}
+
+	i64 const year_2000 = year - 100;
+
+	i32 cycles_400 = year_2000 / 400;
+	i32 within_400 = year_2000 % 400;
+
+	if (within_400 < 0) {
+		--cycles_400;
+		within_400 += 400;
+	}
+
+	if (within_400 == 0) {
+		*is_leap = true;
+	}
+
+	i32 const cycles_100 = within_400 / 100;
+	i32 const within_100 = within_400 % 100;
+
+	i32 const cycles_4 = within_100 / 4;
+	i32 const within_4 = within_100 % 4;
+
+	*is_leap = within_400 == 0 || (within_4 == 0 && within_100 != 0);
+
+	i32 const leaps = LEAPS_PER_400 * cycles_400 + LEAPS_PER_100 * cycles_100 + LEAPS_PER_4 * cycles_4 - *is_leap;
+
+	return (year_2000 * DAYS_PER_YEAR + leaps + 10958) * SECONDS_PER_DAY;
+}
+
+bool time_is_leap_year(i32 const year) {
+	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+}
+
+u32 time_month_to_day_of_year(u8 const month, bool const is_leap_year) {
+	// Prefix sums of days based on month.
+	// Each entry is for the 1st of that month.
+	// February has 28 days, i.e., it is not a leap year.
+	static const u32 lut[MONTHS_PER_YEAR] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+
+	u32 days = lut[month];
+
+	// Add the 29th day to February if necessary (month 1 is February since we are zero-indexed).
+	if (is_leap_year && month > 1) {
+		days += 1;
+	}
+
+	return days;
+}
+
+static time_t month_to_secs(u8 const month, bool const is_leap) {
+	return time_month_to_day_of_year(month, is_leap) * SECONDS_PER_DAY;
+}
+
 bool time_unix_to_components(time_t const time, struct time_components* const ret) {
 	if (time < EARLY_MINIMUM || time > EARLY_MAXIMUM) {
 		return false;
@@ -78,7 +143,7 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 	}
 	days_within -= remaining_years * DAYS_PER_YEAR;
 
-	bool const leap = remaining_years == 0 || (cycles_4_years != 0 || cycles_100_years == 0);
+	bool const leap = remaining_years == 0 && (cycles_4_years != 0 || cycles_100_years == 0);
 	i32 day_of_year = days_within + 31 + 28 + (i32)leap;
 	i32 const year_length = 365 + (i32)leap;
 	if (day_of_year >= year_length) {
@@ -112,63 +177,6 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 	ret->second = seconds_within_day % SECONDS_PER_MINUTE;
 
 	return true;
-}
-
-static time_t year_to_secs(i64 const year, bool* const is_leap) {
-	// The years 1902..=1938.
-	if (year >= 2 && year <= 138) {
-		i32 const year_1968 = year - 68;
-
-		i32 leaps = (year_1968 / 4) * LEAPS_PER_4;
-		*is_leap = year_1968 % 4 == 0;
-		if (*is_leap) {
-			--leaps;
-		}
-
-		return SECONDS_PER_YEAR * (year - 70) + SECONDS_PER_DAY * leaps;
-	}
-
-	i64 const year_2000 = year - 100;
-
-	i32 cycles_400 = year_2000 / 400;
-	i32 within_400 = year_2000 % 400;
-
-	if (within_400 < 0) {
-		--cycles_400;
-		within_400 += 400;
-	}
-
-	if (within_400 == 0) {
-		*is_leap = true;
-	}
-
-	i32 const cycles_100 = within_400 / 100;
-	i32 const within_100 = within_400 % 100;
-
-	i32 const cycles_4 = within_100 / 4;
-	i32 const within_4 = within_100 % 4;
-
-	*is_leap = within_400 == 0 || (within_4 == 0 && within_100 != 0);
-
-	i32 const leaps = LEAPS_PER_400 * cycles_400 + LEAPS_PER_100 * cycles_100 + LEAPS_PER_4 * cycles_4 - *is_leap;
-
-	return (year_2000 * DAYS_PER_YEAR + leaps + 10958) * SECONDS_PER_DAY;
-}
-
-static time_t month_to_secs(u8 const month, bool const is_leap) {
-	// Prefix sums of days based on month.
-	// Each entry is for the 1st of that month.
-	// February has 28 days, i.e., it is not a leap year.
-	static const i32 lut[MONTHS_PER_YEAR] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
-
-	i32 days = lut[month];
-
-	// Add the 29th day to February if necessary (month 1 is February since we are zero-indexed).
-	if (is_leap && month > 1) {
-		days += 1;
-	}
-
-	return days * SECONDS_PER_DAY;
 }
 
 time_t time_unix_from_components(struct time_components const* const components) {
