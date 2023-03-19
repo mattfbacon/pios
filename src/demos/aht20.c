@@ -13,7 +13,7 @@ void main(void) {
 	LOG_INFO("initializing i2c");
 	i2c_init(i2c_speed_standard);
 
-	// wait for sensor to initialize
+	// Wait for sensor to initialize.
 	sleep_micros(100'000);
 
 	LOG_INFO("initializing aht20");

@@ -1,3 +1,30 @@
+// # Approach
+//
+// We use a traditional "free list" approach for this allocator.
+// The name is a bit misleading because the block list contains both free and used blocks.
+//
+// The block list is a linked list where the items are block headers.
+// These headers store links to the previous and next blocks as well as flags for whether the block is free and whether the block is the last block.
+// The data region that a given block describes/manages is simply `block->next - block->data` (excluding casts).
+// The first block's previous pointer is NULL.
+// The last block's next pointer points to the end of the heap, and the block has the last flag set.
+//
+// In the initial state, the block list contains a single free block spanning the entire region of heap memory.
+// When `malloc` is called, it tries to find a suitable block to return, splitting a large block into smaller blocks as necessary.
+// This allows the giant initial block to be split into reasonably-sized blocks for allocations as necessary.
+//
+// Conversely, when `free` is called, beyond simply marking the block as free, we try to merge it with free blocks on either side.
+// This allows undoing the splits done by `malloc`, and indeed the heap will return to the initial state of a single giant free block once all allocations have been freed.
+// The merging algorithm isn't entirely optimal and unmerged blocks can remain, but it helps a lot compared to not merging at all.
+// Besides, these unmerged blocks can still be reused by new properly-sized allocations.
+//
+// # "First Free Block" Optimization
+//
+// This allocator also uses a "first free block" optimization.
+// When we allocate a block, we know that it won't be free, so there's no reason to make subsequent malloc calls traverse it.
+// Thus, if the block we allocated was the current head block, we can set the head block to the block after this one.
+//
+// Conversely, when freeing a block, if it is before the current head, we can update the head.
 
 #include "base.h"
 #include "mailbox.h"
@@ -15,6 +42,7 @@ enum {
 	FLAGS_LAST = 1 << 1,
 
 	// The minimum block size (as returned by `block_size`) of a split-off block.
+	// This is a bit of a heuristic as it's meant to balance block header overhead with the advantage of splitting.
 	SPLIT_MARGIN = 16,
 };
 

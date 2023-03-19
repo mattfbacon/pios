@@ -1,9 +1,9 @@
 // # Resources
 //
-// - http://yannik520.github.io/sdio.html
-// - https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf (for RPi3 but the EMMC controller is the same except for the base address)
-// - https://web.archive.org/web/20170107083932/http://lib.store.yahoo.net/lib/yhst-92940736592539/ts4gsdhc150.pdf
-// - https://web.archive.org/web/20160301223058/http://www.circlemud.org/jelson/sdcard/SDCardStandardv1.9.pdf
+// - <http://yannik520.github.io/sdio.html>
+// - <https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf> (for RPi3 but the EMMC controller is the same except for the base address)
+// - <https://web.archive.org/web/20170107083932/http://lib.store.yahoo.net/lib/yhst-92940736592539/ts4gsdhc150.pdf>
+// - <https://web.archive.org/web/20160301223058/http://www.circlemud.org/jelson/sdcard/SDCardStandardv1.9.pdf>
 
 #include "base.h"
 #include "emmc.h"
@@ -130,7 +130,7 @@ enum {
 	CONDITION_MASK = 0xfff,
 
 	CMD_BLOCK_COUNTER = 1 << 1,
-	// unset = host to card
+	// Unset = host to card.
 	CMD_CARD_TO_HOST = 1 << 4,
 	CMD_MULTIBLOCK = 1 << 5,
 	CMD_IS_DATA = 1 << 21,
@@ -203,7 +203,7 @@ static u32 get_clock_divider(u32 const base_clock, u32 const target_rate) {
 static bool switch_clock_rate(u32 const base_clock, u32 const target_rate) {
 	LOG_TRACE("switching clock rate to %u with base clock %u", target_rate, base_clock);
 
-	// get divider here so we fail early if we cannot find one
+	// Get divider here so we fail early if we cannot find one.
 	u32 const divider = get_clock_divider(base_clock, target_rate);
 
 	wait_reg_mask(&EMMC->status, STATUS_COMMAND_INHIBIT | STATUS_DATA_INHIBIT, false, 1'000);
@@ -454,7 +454,7 @@ static bool check_ocr(void) {
 static bool check_rca(void) {
 	LOG_DEBUG("checking RCA");
 
-	// we need to send this command before the "send relative address" command even though we don't care about the card ID.
+	// We need to send this command before the "send relative address" command even though we don't care about the card ID.
 	TRY_MSG(emmc_command(command_send_card_id, 0, TIMEOUT_DEFAULT))
 
 	TRY_MSG(emmc_command(command_send_relative_address, 0, TIMEOUT_DEFAULT))
@@ -550,7 +550,7 @@ static bool emmc_card_reset(void) {
 		TRY_MSG(emmc_command(command_set_block_length, EMMC_BLOCK_SIZE, TIMEOUT_DEFAULT));
 	}
 
-	// acknowledge any leftover interrupts, just to be safe
+	// Acknowledge any leftover interrupts, just to be safe.
 	EMMC->interrupt_flags = 0xffffffff;
 
 	return true;
@@ -594,7 +594,7 @@ bool emmc_read(u8* const buffer, u32 const start_block, u32 const num_blocks) {
 
 bool emmc_write(u8 const* const buffer, u32 const start_block, u32 const num_blocks) {
 	LOG_DEBUG("writing %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
-	// casting away const because the buffer will not be modified in the write mode
+	// Casting away `const` because the buffer will not be modified in the write mode.
 	return do_data_command(true, (u8*)buffer, num_blocks, start_block);
 }
 

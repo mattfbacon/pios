@@ -3,7 +3,9 @@
 // The HD44780U device has many configuration options such as one- vs two-line operation, 5x8 vs 5x10 characters, left-to-right vs right-to-left text, etc.
 // For the sake of simplicity, this driver is opinionated and chooses two-line operation, 5x8 characters, and left-to-right text.
 //
-// Reference the datasheet at <https://www.sparkfun.com/datasheets/LCD/HD44780.pdf>.
+// # References
+//
+// - <https://www.sparkfun.com/datasheets/LCD/HD44780.pdf>
 
 #pragma once
 
@@ -12,9 +14,10 @@ typedef enum lcd_direction {
 	lcd_direction_right = 1,
 } lcd_direction_t;
 
-// Both lines and columns are zero-indexed.
 typedef struct lcd_position {
+	// Zero-indexed.
 	u8 line;
+	// Zero-indexed.
 	u8 column;
 } lcd_position_t;
 
@@ -39,7 +42,7 @@ void lcd_clear(void);
 
 // Resets the position to (0, 0) and resets any display shifting.
 //
-// This command is significantly slower than simply calling `lcd_set_position(0, 0);` so only use it if you also need to reset the display shifting.
+// This command is significantly slower than simply calling `lcd_set_position(0, 0)` so only use it if you also need to reset the display shifting.
 void lcd_go_home(void);
 
 void lcd_set_display(bool on, bool cursor, bool blink);
@@ -48,7 +51,7 @@ void lcd_shift_cursor(lcd_direction_t direction);
 
 void lcd_shift_display(lcd_direction_t direction);
 
-// both lines and columns are zero-indexed.
+// Both lines and columns are zero-indexed.
 void lcd_set_position(u8 line, u8 column);
 
 // Each character is 5 columns by 8 rows.

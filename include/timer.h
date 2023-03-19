@@ -1,3 +1,7 @@
+// There are four timers.
+// Timers 0 and 2 are used by other hardware, so timers 1 and 3 are available to software.
+// Timer 1 is used by the sleep code.
+
 #pragma once
 
 #include "base.h"

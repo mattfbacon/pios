@@ -1,3 +1,10 @@
+// # References
+//
+// - <https://github.com/raspberrypi/firmware/wiki/Mailboxes>
+// - <https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface>
+// - <https://github.com/raspberrypi/firmware/wiki/Accessing-mailboxes>
+// - <https://github.com/isometimes/rpi4-osdev/tree/master/part5-framebuffer>
+
 #include "base.h"
 #include "log.h"
 #include "mailbox.h"
@@ -41,7 +48,7 @@ bool mailbox_call(mailbox_channel_t const channel) {
 	}
 }
 
-bool mailbox_get_arm_memory(u32* const base, u32* const size) {
+bool mailbox_get_arm_memory(u32* restrict const base, u32* restrict const size) {
 	LOG_DEBUG("getting ARM memory");
 
 	mailbox[0] = 8 * sizeof(u32);
@@ -49,8 +56,8 @@ bool mailbox_get_arm_memory(u32* const base, u32* const size) {
 	mailbox[2] = MAILBOX_TAG_GET_ARM_MEMORY;
 	mailbox[3] = 2 * sizeof(u32);
 	mailbox[4] = 0;
-	// mailbox[5] = base address
-	// mailbox[6] = size
+	// `mailbox[5]` will be set to the base address.
+	// `mailbox[6]` will be set to the size.
 	mailbox[7] = MAILBOX_TAG_LAST;
 
 	TRY(mailbox_call(mailbox_channel_tags))

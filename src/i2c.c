@@ -44,7 +44,7 @@ bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
 
 	BASE->peer_address = (u32)address;
 	BASE->control = CONTROL_CLEAR_FIFO;
-	// clear all these flags before the transfer
+	// Clear all these flags before the transfer.
 	BASE->status = STATUS_DONE | STATUS_ACK_ERROR | STATUS_CLOCK_STRETCH_TIMEOUT;
 	BASE->data_length = len;
 	BASE->control = CONTROL_ENABLE | CONTROL_START_TRANSFER | CONTROL_READ;
@@ -77,7 +77,7 @@ bool i2c_send(i2c_address_t const address, u8 const* const buf, u32 const len) {
 
 	BASE->peer_address = (u32)address;
 	BASE->control = CONTROL_CLEAR_FIFO;
-	// clear all these flags before the transfer
+	// Clear all these flags before the transfer.
 	BASE->status = STATUS_DONE | STATUS_ACK_ERROR | STATUS_CLOCK_STRETCH_TIMEOUT;
 	BASE->data_length = len;
 	BASE->control = CONTROL_ENABLE | CONTROL_START_TRANSFER;

@@ -1,3 +1,6 @@
+// Allows interfacing with the VideoCore Mailbox.
+// A shared buffer for messages is provided.
+
 #pragma once
 
 typedef enum mailbox_channel {
@@ -28,19 +31,19 @@ enum {
 	MAILBOX_TAG_GET_CLOCK_RATE = 0x3'0002,
 	MAILBOX_TAG_SET_CLOCK_RATE = 0x3'8002,
 
+	MAILBOX_TAG_GET_FRAMEBUFFER = 0x4'0001,
 	MAILBOX_TAG_SET_PHYSICAL_WIDTH_HEIGHT = 0x4'8003,
 	MAILBOX_TAG_SET_VIRTUAL_WIDTH_HEIGHT = 0x4'8004,
-	MAILBOX_TAG_SET_VIRTUAL_OFFSET = 0x4'8009,
 	MAILBOX_TAG_SET_DEPTH = 0x4'8005,
 	MAILBOX_TAG_SET_PIXEL_ORDER = 0x4'8006,
-	MAILBOX_TAG_GET_FRAMEBUFFER = 0x4'0001,
 	MAILBOX_TAG_GET_STRIDE = 0x4'0008,
+	MAILBOX_TAG_SET_VIRTUAL_OFFSET = 0x4'8009,
 
 	MAILBOX_TAG_LAST = 0,
 };
 
 bool mailbox_call(mailbox_channel_t const channel);
 
-bool mailbox_get_arm_memory(u32* base, u32* size);
+bool mailbox_get_arm_memory(u32* restrict base, u32* restrict size);
 bool mailbox_get_clock_rate(mailbox_clock_t clock, u32* ret);
 bool mailbox_set_clock_rate(mailbox_clock_t clock, u32 rate);

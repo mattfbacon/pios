@@ -1,3 +1,15 @@
+// We use a persistent struct to allow optimizing operations such as setting a single pin.
+// Otherwise we would have to fetch the current state, modify it, then send it back.
+// Especially in the somewhat timing-sensitive context of the LCD display, that approach would be far too slow.
+//
+// This approach extends to all operations including "write all", which will intelligently determine which register(s) must be written, if any.
+//
+// # References
+//
+// - <https://ww1.microchip.com/downloads/en/devicedoc/20001952c.pdf>
+// - <https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library/blob/master/utility/Adafruit_MCP23017.cpp>
+// - <https://github.com/adafruit/Adafruit-MCP23017-Arduino-Library/blob/master/src/Adafruit_MCP23X17.cpp>
+
 #include "devices/mcp23017.h"
 #include "sleep.h"
 #include "try.h"
@@ -11,8 +23,7 @@ enum {
 	REG_OUTPUT_LATCH = 0x14,
 };
 
-// 8 pins per port
-
+// 8 pins per port.
 static u8 offset_for_pin(mcp23017_pin_t const pin) {
 	return pin / 8;
 }

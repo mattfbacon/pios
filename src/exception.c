@@ -1,3 +1,34 @@
+// # IRQ Controller
+//
+// I could not find any documentation for the interrupt controller's MMIO register layout but LLD contains code for it so I based this implementation on that.
+// Reference part 13 for more information.
+//
+// This is not the GIC, the new interrupt controller available in the RPi 4.
+// There is so little information available online about the GIC that I gave up and simply used the legacy controller.
+// Configuring the hardware to use the legacy controller is relatively simple: just don't initialize the GIC. I commented out the call to the initialization function in the armstub.
+//
+// # IRQ Numbers
+//
+// The IRQ numbers can be found at heading 6.2.4, page 87, of the BCM2711 peripherals datasheet.
+// As each register contains 32 bits, numbers 32..=63 are at bit `number - 32` in the second register for the desired function, so for example to enable interrupt number 50 we would do `IRQ_BASE->irq0_enable[1] |= 1 << (50 - 32);`.
+//
+// # DAIF
+//
+// This module also contains code to manage the DAIF status register.
+// DAIF is a bit confusing because there are two ways to access/modify it: directly as the DAIF MSR and indirectly as DAIFCLR and DAIFSET.
+//
+// When using the DAIF register directly, bits 6..=9 are used, while when using DAIFCLR and DAIFSET, bits 0..=3 are used.
+//
+// There are four bits in the mask, D, A, I, and F:
+// - (bit 3/9) D = debug exceptions
+// - (bit 2/8) A = SError (system error) exceptions
+// - (bit 1/7) I = IRQs
+// - (bit 0/6) F = FIQs
+//
+// When a bit is set in the DAIF, it is masked, so that type of exception will not be received.
+//
+// In our general usage we want SErrors and IRQs, so we clear those bits in `exception_init`.
+
 #include "base.h"
 #include "exception.h"
 #include "halt.h"

@@ -1,3 +1,8 @@
+// # References
+//
+// - <https://github.com/adafruit/Adafruit_AHTX0>
+// - <https://cdn-learn.adafruit.com/assets/assets/000/091/676/original/AHT20-datasheet-2020-4-16.pdf>
+
 #include "devices/aht20.h"
 #include "halt.h"
 #include "i2c.h"
@@ -10,12 +15,15 @@
 enum {
 	SENSOR_ADDRESS = 0x38,
 
+	COMMAND_GET_STATUS = 0x71,
 	COMMAND_CALIBRATE = 0xe1,
 	COMMAND_MEASURE = 0xac,
 	COMMAND_SOFT_RESET = 0xba,
 
 	STATUS_BUSY = 0x80,
 	STATUS_CALIBRATED = 0x08,
+
+	STATUS_INITIAL_EXPECTED_MASK = 0x18,
 };
 
 static bool send(u8 const* const buf, u32 const len) {
@@ -38,6 +46,7 @@ static void wait_until_not_busy(void) {
 	}
 }
 
+// See section 8 of the datasheet.
 static aht20_data_t decode_sensor_data(u8 const data[6]) {
 	static f32 const humidity_factor = 9.5367431640625e-05f;
 	static f32 const temperature_factor = 0.00019073486328125f;
@@ -53,14 +62,18 @@ static aht20_data_t decode_sensor_data(u8 const data[6]) {
 	return ret;
 }
 
+// See section 7.4 of the datasheet.
 void aht20_init() {
 	LOG_DEBUG("initializing AHT20 sensor");
 
-	u8 buf = 0x71;
-	assert(send(&buf, 1), "send 0x71");
-	assert((get_status() & 0x18) == 0x18, "status is not 0x18");
+	u8 buf = COMMAND_GET_STATUS;
+	assert(send(&buf, 1), "send status command");
+	// Apparently we're supposed to initialize some registers if this isn't true.
+	// We haven't implemented that, and it's never been an issue.
+	assert((get_status() & STATUS_INITIAL_EXPECTED_MASK) == STATUS_INITIAL_EXPECTED_MASK, "initial status is incorrect");
 }
 
+// See section 7.4 of the datasheet.
 aht20_data_t aht20_measure() {
 	LOG_DEBUG("measuring from sensor");
 

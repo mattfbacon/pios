@@ -14,7 +14,7 @@ void timer_acknowledge(u8 const timer) {
 u64 timer_get_micros(void) {
 	u32 hi = TIMER_BASE->counter_hi;
 	u32 lo = TIMER_BASE->counter_lo;
-	// check if `lo` overflowed causing `hi` to increment
+	// Check if `lo` overflowed causing `hi` to increment.
 	if (TIMER_BASE->counter_hi != hi) {
 		hi = TIMER_BASE->counter_hi;
 		lo = TIMER_BASE->counter_lo;

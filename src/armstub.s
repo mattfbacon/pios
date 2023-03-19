@@ -1,5 +1,5 @@
-// downloaded from https://github.com/raspberrypi/tools/blob/master/armstubs/armstub8.S
-// see associated copyright notice
+// Based on <https://github.com/raspberrypi/tools/blob/master/armstubs/armstub8.S>.
+// See associated copyright notice.
 
 .equ LOCAL_CONTROL, 0xff800000
 .equ LOCAL_PRESCALER, 0xff800008
@@ -23,12 +23,12 @@
 
 .equ GICC_CTRLR, 0x0
 .equ GICC_PMR, 0x4
-.equ INTERRUPT_NUMBER, 0x8  // Number of interrupt enable registers (256 total irqs)
+.equ INTERRUPT_NUMBER, 0x8  // Number of interrupt enable registers (256 total IRQs).
 .equ GICD_CTRLR, 0x0
 .equ GICD_IGROUPR, 0x80
 
 .equ CPTR_ALLOW_SVE, 1 << 8
-// also allows TFP with a 0 at bit 10
+// Also allows TFP with a 0 at bit 10.
 .equ CPTR_VAL, CPTR_ALLOW_SVE
 
 .global _start
@@ -38,36 +38,30 @@ _start:
 	// Bit 8 clear: Timer source is 54MHz crystal (vs. APB).
 	ldr x0, =LOCAL_CONTROL
 	str wzr, [x0]
-	// LOCAL_PRESCALER; divide-by (0x80000000 / register_val) == 1
+	// LOCAL_PRESCALER; divide-by (0x80000000 / register_val) == 1.
 	mov w1, 0x80000000
 	str w1, [x0, #(LOCAL_PRESCALER - LOCAL_CONTROL)]
 
-	// Set L2 read/write cache latency to 3
+	// Set L2 read/write cache latency to 3.
 	mrs x0, S3_1_c11_c0_2
 	mov x1, #0x22
 	orr x0, x0, x1
 	msr S3_1_c11_c0_2, x0
 
-	// Set up CNTFRQ_EL0
 	ldr x0, =OSC_FREQ
 	msr CNTFRQ_EL0, x0
 
-	// Set up CNTVOFF_EL2
 	msr CNTVOFF_EL2, xzr
 
-	// Enable FP/SIMD
 	mov x0, #CPTR_VAL
 	msr CPTR_EL3, x0
 
-	// Set up SCR
 	mov x0, #SCR_VAL
 	msr SCR_EL3, x0
 
-	// Set up ACTLR
 	mov x0, #ACTLR_VAL
 	msr ACTLR_EL3, x0
 
-	// Set SMPEN
 	mov x0, #CPUECTLR_EL1_SMPEN
 	msr S3_1_C15_C2_1, x0
 
@@ -112,9 +106,8 @@ spin_cpu2:
 .org 0xf0
 .global spin_cpu3
 spin_cpu3:
-	# Shared with next two symbols/.word
-	# FW clears the next 8 bytes after reading the initial value, leaving
-	# the location suitable for use as spin_cpu3
+	// Shared with next two symbols/`.word`.
+	// Firmware clears the next 8 bytes after reading the initial value, leaving the location suitable for use as `spin_cpu3`.
 .org 0xf0
 .global stub_magic
 stub_magic:
@@ -138,19 +131,19 @@ setup_gic:  // Called from secure mode - set all interrupts to group 1 and enabl
 	mrs x0, MPIDR_EL1
 	ldr x2, =GIC_DISTB
 	tst x0, #0x3
-	b.eq 2f  // primary core
+	b.eq 2f  // Primary core.
 
-	mov w0, #3  // Enable group 0 and 1 IRQs from distributor
+	mov w0, #3  // Enable group 0 and 1 IRQs from distributor.
 	str w0, [x2, #GICD_CTRLR]
 2:
 	add x1, x2, #(GIC_CPUB - GIC_DISTB)
 	mov w0, #0x1e7
-	str w0, [x1, #GICC_CTRLR]  // Enable group 1 IRQs from CPU interface
+	str w0, [x1, #GICC_CTRLR]  // Enable group 1 IRQs from CPU interface.
 	mov w0, #0xff
-	str w0, [x1, #GICC_PMR]  // priority mask
+	str w0, [x1, #GICC_PMR]  // Priority mask.
 	add x2, x2, #GICD_IGROUPR
 	mov x0, #(INTERRUPT_NUMBER * 4)
-	mov w1, #~0  // group 1 all the things
+	mov w1, #~0  // Group 1 all the things.
 3:
 	subs x0, x0, #4
 	str w1, [x2, x0]

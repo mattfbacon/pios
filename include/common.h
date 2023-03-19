@@ -15,7 +15,7 @@ typedef u64 usize;
 typedef i64 isize;
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wenum-too-large"  // not an enum
+#pragma GCC diagnostic ignored "-Wenum-too-large"  // Not an enum.
 enum {
 	U8_MIN = 0,
 	U8_MAX = 255,

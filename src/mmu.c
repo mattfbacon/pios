@@ -1,3 +1,7 @@
+// I don't know much about how this code works.
+// The MMU and page tables are not very well-documented.
+// It's based on LLD's implementation: <https://github.com/rockytriton/LLD/blob/main/rpi_bm/part17/src/mem/mem.c>
+
 #include "base.h"
 
 enum {
@@ -9,7 +13,7 @@ enum {
 	ENTRIES_PER_TABLE = 512,
 	NUM_PMDS = 4,
 
-	// Granule size = 4k
+	// Granule size is 4KB.
 	TCR_TG0_4K = 0 << 14,
 	// The lower VA range (starting at 0) extends for 2^48 bytes, or 0xffff'ffff'ffff.
 	TCR_T0SZ = 64 - 48,

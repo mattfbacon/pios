@@ -49,8 +49,10 @@
 
 .macro invalid_entry
 .p2align 7
-	mov x0, #((. - exception_vector_table) >> 7)
+	// We don't save any registers because `exception_handle_invalid` halts and does not return.
 
+	// This gives us the index of the entry in the table, since each entry is given `1 << 7` bytes.
+	mov x0, #((. - exception_vector_table) >> 7)
 	bl exception_handle_invalid
 .endm
 

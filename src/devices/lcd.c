@@ -1,6 +1,11 @@
 // # Implementation Notes
 //
 // The device runs in 4-bit mode due to scarcity of GPIO lines on the MCP23017.
+//
+// # References
+//
+// - <https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library>
+// - <https://www.sparkfun.com/datasheets/LCD/HD44780.pdf>
 
 #include "devices/lcd.h"
 #include "devices/mcp23017.h"
@@ -13,19 +18,19 @@ enum {
 	PIN_BACKLIGHT_GREEN = 7,
 	PIN_BACKLIGHT_BLUE = 8,
 
-	// low = instruction register, high = data register
+	// Low for instruction register, high for data register.
 	PIN_REG_SELECT = 15,
-	// low = write, high = read
+	// Low for write, high for read.
 	PIN_READ_WRITE = 14,
 	PIN_ENABLE = 13,
 
-	// bits 0 and 4
+	// Bits 0 and 4.
 	PIN_DATA0 = 12,
-	// bits 1 and 5
+	// Bits 1 and 5.
 	PIN_DATA1 = 11,
-	// bits 2 and 6
+	// Bits 2 and 6.
 	PIN_DATA2 = 10,
-	// bits 3 and 7
+	// Bits 3 and 7.
 	PIN_DATA3 = 9,
 
 	PIN_BUSY = PIN_DATA3,
@@ -53,9 +58,9 @@ enum {
 	COMMAND_GO_HOME = 0x02,
 
 	COMMAND_SET_ENTRY_MODE = 0x04,
-	// unset = right-to-left
+	// Unset is right-to-left.
 	MODE_LEFT_TO_RIGHT = 0x02,
-	// unset = left-justify
+	// Unset is left-justify.
 	MODE_RIGHT_JUSTIFY = 0x01,
 
 	COMMAND_SET_DISPLAY = 0x08,
@@ -64,7 +69,7 @@ enum {
 	DISPLAY_BLINK = 0x01,
 
 	COMMAND_SHIFT = 0x10,
-	// unset = shift cursor
+	// Unset shifts cursor.
 	SHIFT_DISPLAY = 0x08,
 
 	COMMAND_SET_FUNCTION = 0x20,
@@ -135,7 +140,7 @@ static void wait_until_not_busy(void) {
 	write(PIN_REG_SELECT, false);
 	write(PIN_READ_WRITE, true);
 	set_mode(PIN_BUSY, mcp23017_mode_input);
-	// don't wait more than ~100 ms
+	// Don't wait more than about 100 ms.
 	for (u32 i = 0; i < 100; ++i) {
 		write(PIN_ENABLE, true);
 		sleep_micros(1);
@@ -219,7 +224,7 @@ void lcd_init() {
 void lcd_set_backlight(bool const red, bool const green, bool const blue) {
 	LOG_DEBUG("setting backlight to red %B green %B blue %B", red, green, blue);
 
-	// this is less for optimization and more for avoiding flickering when setting the backlight
+	// This is less for optimization and more for avoiding flickering when setting the backlight.
 	u16 pins = (u16)device.outputs[1] << 8 | device.outputs[0];
 	pins &= ~BACKLIGHT_MASK;
 	pins |= (u16)(!red) << PIN_BACKLIGHT_RED | (u16)(!green) << PIN_BACKLIGHT_GREEN | (u16)(!blue) << PIN_BACKLIGHT_BLUE;
@@ -297,7 +302,7 @@ void lcd_load_character(u8 const index, u8 const data[8]) {
 lcd_buttons_t lcd_get_buttons() {
 	LOG_DEBUG("getting buttons");
 
-	// in hardware the buttons are active-low
+	// In hardware the buttons are active-low, so do a bitwise-not.
 	lcd_buttons_t const values = ~(read_all() & BUTTON_MASK);
 	LOG_DEBUG("buttons state: %x", values);
 	return values;

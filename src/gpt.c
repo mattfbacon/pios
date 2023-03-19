@@ -1,3 +1,8 @@
+// # References
+//
+// - <https://en.wikipedia.org/wiki/GUID_Partition_Table>
+// - <https://developer.apple.com/library/archive/technotes/tn2166/_index.html#//apple_ref/doc/uid/DTS10003927-CH1-SUBSECTION11>
+
 #include "emmc.h"
 #include "gpt.h"
 #include "try.h"
@@ -6,6 +11,8 @@ enum {
 	GPT_SIGNATURE = 0x5452'4150'2049'4645ull,
 	GPT_REVISION = 0x0001'0000u,
 	GPT_HEADER_SIZE = 92,
+
+	GPT_HEADER_LBA = 1,
 };
 
 static bool guid_equal(guid_t const* const a, guid_t const* const b) {
@@ -43,7 +50,7 @@ struct __attribute__((packed)) gpt_partition_entry {
 bool find_partition_by_guid(guid_t const* const expected_id, struct lba_range* const ret) {
 	u8 buf[EMMC_BLOCK_SIZE] __attribute__((aligned(alignof(struct gpt_header))));
 
-	TRY_MSG(emmc_read(buf, 1, 1))
+	TRY_MSG(emmc_read(buf, GPT_HEADER_LBA, 1))
 
 	_Static_assert(sizeof(struct gpt_header) <= sizeof(buf));
 	_Static_assert(alignof(struct gpt_header) <= alignof(buf));

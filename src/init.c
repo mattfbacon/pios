@@ -8,11 +8,12 @@ void standard_init(void) {
 	exception_init();
 
 	uart_init();
-	// clear the terminal
+	// Clear the terminal.
 	uart_send_str("\e[2J\e[H");
 
 	malloc_init();
 
+	// Turn on the ACT LED to indicate that the system is up.
 	gpio_set_mode(42, gpio_mode_output);
 	gpio_write(42, true);
 

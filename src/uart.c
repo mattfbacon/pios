@@ -7,8 +7,6 @@
 // Instead, we use `sleep_micros` and are careful to use interrupt-based, rather than spin-based, sleeping.
 //
 // There's no logging in this module because logging goes over the UART; that would be quite recursive.
-//
-// TODO explore disabling the hardware FIFO and using an interrupt handler + software FIFO to provide this behavior.
 
 #include "base.h"
 #include "gpio.h"

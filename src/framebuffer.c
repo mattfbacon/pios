@@ -1,3 +1,7 @@
+// # References
+//
+// - <https://github.com/isometimes/rpi4-osdev/tree/master/part5-framebuffer>
+
 #include "framebuffer.h"
 #include "log.h"
 #include "mailbox.h"
@@ -61,12 +65,13 @@ void framebuffer_init(void) {
 
 	mailbox[34] = MAILBOX_TAG_LAST;
 
-	// Check call is successful and we have a pointer with depth 32
+	// Check call is successful and we have a pointer with depth 32.
 	if (mailbox_call(mailbox_channel_tags) && mailbox[20] == 32 && mailbox[28] != 0) {
 		framebuffer.width = mailbox[10];
 		framebuffer.height = mailbox[11];
-		framebuffer.stride = mailbox[33] / sizeof(framebuffer_color_t);  // XXX will stride ever not be a multiple of 4??
-		// convert GPU address to ARM address
+		// XXX will stride ever not be a multiple of 4??
+		framebuffer.stride = mailbox[33] / sizeof(framebuffer_color_t);
+		// Convert GPU address to ARM address.
 		framebuffer.buffer = (framebuffer_color_t volatile*)(usize)(mailbox[28] & 0x3fffffff);
 	}
 }

@@ -13,16 +13,13 @@ typedef enum gpio_mode {
 	gpio_mode_alt5 = 2,
 } gpio_mode_t;
 
-void gpio_set_mode(gpio_pin_t pin, gpio_mode_t mode);
-
-void gpio_write(gpio_pin_t pin, bool value);
-
-bool gpio_read(gpio_pin_t pin);
-
 typedef enum gpio_pull {
 	gpio_pull_floating = 0,
 	gpio_pull_up = 1,
 	gpio_pull_down = 2,
 } gpio_pull_t;
 
+void gpio_set_mode(gpio_pin_t pin, gpio_mode_t mode);
+void gpio_write(gpio_pin_t pin, bool value);
+bool gpio_read(gpio_pin_t pin);
 void gpio_set_pull(gpio_pin_t pin, gpio_pull_t pull);

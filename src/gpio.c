@@ -3,12 +3,21 @@
 #include "log.h"
 
 static struct {
+	// 3 bits per pin, 10 pins per register.
+	// See the definition of `gpio_mode_t` for possible values.
 	u32 mode[3];
 	u32 _res0[4];
+	// 1 bit per pin, 32 pins per register.
+	// Writing a bit turns on the corresponding pin.
 	u32 set[3];
+	// 1 bit per pin, 32 pins per register.
+	// Writing a bit turns off the corresponding pin.
 	u32 clear[3];
+	// 1 bit per pin, 32 pins per register.
 	u32 read[3];
 	u32 _res1[41];
+	// 2 bits per pin, 16 pins per register.
+	// See the definition of `gpio_pull_t` for possible values.
 	u32 pull[3];
 } volatile* const GPIO_BASE = (void volatile*)(PERIPHERAL_BASE + 0x20'0000);
 

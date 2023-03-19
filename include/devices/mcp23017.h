@@ -28,19 +28,19 @@ enum {
 
 void mcp23017_init(mcp23017_device_t* this, i2c_address_t address);
 
-// returns true on success, false on failure.
+// Returns true on success, false on failure.
 bool mcp23017_set_mode(mcp23017_device_t* this, mcp23017_pin_t pin, mcp23017_mode_t mode);
 
-// returns true on success, false on failure.
+// Returns true on success, false on failure.
 bool mcp23017_write(mcp23017_device_t* this, mcp23017_pin_t pin, bool value);
 
 bool mcp23017_write_all(mcp23017_device_t* this, u16 values);
 
-// returns true on success, false on failure.
+// Returns true on success, false on failure.
 bool mcp23017_read(mcp23017_device_t* this, mcp23017_pin_t pin, bool* ret);
 
-// returns true on success, false on failure.
+// Returns true on success, false on failure.
 bool mcp23017_read_all(mcp23017_device_t* this, u16* ret);
 
-// returns true on success, false on failure.
+// Returns true on success, false on failure.
 bool mcp23017_set_pull(mcp23017_device_t* this, mcp23017_pin_t pin, mcp23017_pull_t pull);
