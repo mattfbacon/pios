@@ -1,115 +1,14 @@
 #include <sqlite3.h>
 #include <time.h>
 
+#include "devices/ds3231.h"
 #include "emmc.h"
 #include "random.h"
 #include "sleep.h"
 #include "sqlite-api.h"
 #include "string.h"
+#include "time.h"
 #include "try.h"
-
-#if 0
-enum {
-  LEAPOCH = 946684800LL + 86400 * (31 + 29),
-
-  DAYS_PER_400Y = 365 * 400 + 97,
-  DAYS_PER_100Y = 365 * 100 + 24,
-  DAYS_PER_4Y = 365 * 4 + 1,
-};
-
-// From musl.
-static bool secs_to_tm(i64 const time, struct tm* ret) {
-  static u8 const days_in_month[] = { 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29 };
-
-  if (time < (i64)I32_MIN * 31622400LL || time > (i64)I32_MAX * 31622400LL) {
-    return false;
-  }
-
-  i64 const secs = time - LEAPOCH;
-  i64 days = secs / 86400;
-  i32 remsecs = secs % 86400;
-  if (remsecs < 0) {
-    remsecs += 86400;
-    --days;
-  }
-
-  i32 wday = (3 + days) % 7;
-  if (wday < 0) {
-    wday += 7;
-  }
-
-  i32 cycles_400 = days / DAYS_PER_400Y;
-  i32 remdays = days % DAYS_PER_400Y;
-  if (remdays < 0) {
-    remdays += DAYS_PER_400Y;
-    --cycles_400;
-  }
-
-  i32 cycles_100 = remdays / DAYS_PER_100Y;
-  if (cycles_100 == 4) {
-    --cycles_100;
-  }
-  remdays -= cycles_100 * DAYS_PER_100Y;
-
-  i32 cycles_4 = remdays / DAYS_PER_4Y;
-  if (cycles_4 == 25) {
-    --cycles_4;
-  }
-  remdays -= cycles_4 * DAYS_PER_4Y;
-
-  i32 remyears = remdays / 365;
-  if (remyears == 4) {
-    --remyears;
-  }
-  remdays -= remyears * 365;
-
-  i32 const leap = !remyears && (cycles_4 || !cycles_100);
-  i32 yday = remdays + 31 + 28 + leap;
-  if (yday >= 365 + leap) {
-    yday -= 365 + leap;
-  }
-
-  i32 const years = remyears + 4 * cycles_4 + 100 * cycles_100 + 400 * cycles_400;
-
-  i32 months = 0;
-  for (; days_in_month[months] <= remdays; months++) {
-    remdays -= days_in_month[months];
-  }
-
-  if (years + 100 > I32_MAX || years + 100 < I32_MIN) {
-    return false;
-  }
-
-  ret->tm_year = years + 100;
-  ret->tm_mon = months + 2;
-  if (ret->tm_mon >= 12) {
-    ret->tm_mon -= 12;
-    ++ret->tm_year;
-  }
-  ret->tm_mday = remdays + 1;
-  ret->tm_wday = wday;
-  ret->tm_yday = yday;
-
-  ret->tm_hour = remsecs / 3600;
-  ret->tm_min = remsecs / 60 % 60;
-  ret->tm_sec = remsecs % 60;
-
-  return true;
-}
-
-struct tm* localtime(time_t const* const time_ptr) {
-  static struct tm ret;
-  time_t const time = *time_ptr;
-
-  secs_to_tm(time, &ret);
-  ret.tm_isdst = false;
-  ret.tm_gmtoff = 0;
-  // See `tzset(3)`.
-  ret.tm_zone = ":";
-
-  return &ret;
-}
-#endif
 
 enum {
 	MAX_PATHNAME = 16,
