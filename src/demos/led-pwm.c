@@ -3,6 +3,11 @@
 #include "pwm.h"
 #include "sleep.h"
 
+enum {
+	CONTROLLER = 0,
+	CHANNEL = 1,
+};
+
 static u32 const SIN_DISCRETE[]
 	= { 0,   0,   1,   2,   4,   6,   9,   12,  16,  20,  24,  30,  35,   41,   48,   54,  62,  70,  78,  86,  95,  105, 115, 125, 136, 146, 158, 169, 181,
 	    194, 206, 219, 232, 245, 259, 273, 287, 301, 316, 331, 345, 361,  376,  391,  406, 422, 437, 453, 469, 484, 500, 516, 531, 547, 563, 578, 594, 609,
@@ -25,15 +30,15 @@ void main(void) {
 
 	LOG_INFO("setting PWM range");
 
-	pwm_set_range(pwm_controller_0, pwm_channel_1, 1'000);
-	pwm_set_data(pwm_controller_0, pwm_channel_1, 0);
-	pwm_init_channel(pwm_controller_0, pwm_channel_1, pwm_channel_enabled);
+	pwm_set_range(CONTROLLER, CHANNEL, 1'000);
+	pwm_set_data(CONTROLLER, CHANNEL, 0);
+	pwm_init_channel(CONTROLLER, CHANNEL, pwm_channel_enabled);
 
 	LOG_INFO("sending data");
 
 	while (true) {
 		for (usize i = 0; i < sizeof(SIN_DISCRETE) / sizeof(SIN_DISCRETE[0]); ++i) {
-			pwm_set_data(pwm_controller_0, pwm_channel_1, SIN_DISCRETE[i]);
+			pwm_set_data(CONTROLLER, CHANNEL, SIN_DISCRETE[i]);
 			sleep_micros(10'000);
 		}
 	}

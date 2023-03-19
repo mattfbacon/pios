@@ -6,7 +6,6 @@
 #include "devices/aht20.h"
 #include "halt.h"
 #include "i2c.h"
-#include "init.h"
 #include "sleep.h"
 #include "string.h"
 #include "try.h"
@@ -34,24 +33,30 @@ static bool recv(u8* const buf, u32 const len) {
 	return i2c_recv(SENSOR_ADDRESS, buf, len);
 }
 
-static u8 get_status(void) {
-	u8 ret;
-	assert(recv(&ret, 1), "receive status");
-	return ret;
+static bool get_status(u8* const ret) {
+	return recv(ret, 1);
 }
 
-static void wait_until_not_busy(void) {
-	while (get_status() & STATUS_BUSY) {
+static bool wait_until_not_busy(void) {
+	u8 status;
+
+	while (true) {
+		TRY(get_status(&status));
+		if (!(status & STATUS_BUSY)) {
+			break;
+		}
 		sleep_micros(10'000);
 	}
+
+	return true;
 }
 
 // See section 8 of the datasheet.
-static aht20_data_t decode_sensor_data(u8 const data[6]) {
+static struct aht20_data decode_sensor_data(u8 const data[6]) {
 	static f32 const humidity_factor = 9.5367431640625e-05f;
 	static f32 const temperature_factor = 0.00019073486328125f;
 
-	aht20_data_t ret;
+	struct aht20_data ret;
 
 	u32 const humidity_raw = (data[1] << 12) | (data[2] << 4) | (data[3] >> 4);
 	ret.humidity = (f32)humidity_raw * humidity_factor;
@@ -63,18 +68,23 @@ static aht20_data_t decode_sensor_data(u8 const data[6]) {
 }
 
 // See section 7.4 of the datasheet.
-void aht20_init() {
+bool aht20_init() {
 	LOG_DEBUG("initializing AHT20 sensor");
 
 	u8 buf = COMMAND_GET_STATUS;
-	assert(send(&buf, 1), "send status command");
+	TRY(send(&buf, 1));
+
+	u8 status;
+	TRY(get_status(&status));
 	// Apparently we're supposed to initialize some registers if this isn't true.
 	// We haven't implemented that, and it's never been an issue.
-	assert((get_status() & STATUS_INITIAL_EXPECTED_MASK) == STATUS_INITIAL_EXPECTED_MASK, "initial status is incorrect");
+	TRY((status & STATUS_INITIAL_EXPECTED_MASK) == STATUS_INITIAL_EXPECTED_MASK);
+
+	return true;
 }
 
 // See section 7.4 of the datasheet.
-aht20_data_t aht20_measure() {
+bool aht20_measure(struct aht20_data* const ret) {
 	LOG_DEBUG("measuring from sensor");
 
 	u8 buf[7];
@@ -82,14 +92,14 @@ aht20_data_t aht20_measure() {
 	buf[0] = COMMAND_MEASURE;
 	buf[1] = 0x33;
 	buf[2] = 0x00;
-	assert(send(buf, 3), "send measure command");
+	TRY(send(buf, 3));
 
 	sleep_micros(80'000);
 	wait_until_not_busy();
 
-	assert(recv(buf, 7), "receive measurement data");
+	TRY(recv(buf, 7));
 
-	aht20_data_t const data = decode_sensor_data(buf);
-	LOG_DEBUG("sensor data: humidity %f, temperature %f", data.humidity, data.temperature);
-	return data;
+	*ret = decode_sensor_data(buf);
+	LOG_DEBUG("sensor data: humidity %f, temperature %f", ret->humidity, ret->temperature);
+	return true;
 }

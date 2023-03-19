@@ -1,6 +1,5 @@
 #include "devices/lcd.h"
 #include "i2c.h"
-#include "init.h"
 #include "sleep.h"
 
 typedef enum mode {
