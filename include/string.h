@@ -34,6 +34,29 @@ inline void memmove(void* const dest_, void const* const src_, usize const lengt
 	}
 }
 
+inline usize strlen(char const* str) {
+	usize ret = 0;
+
+	while (*str != '\0') {
+		++ret;
+		++str;
+	}
+
+	return ret;
+}
+
+inline usize strnlen(char const* str, usize max_length) {
+	usize ret = 0;
+
+	while (max_length > 0 && *str != '\0') {
+		++ret;
+		++str;
+		--max_length;
+	}
+
+	return ret;
+}
+
 inline int strcmp(char const* restrict s1, char const* restrict s2) {
 	while (*s1 != '\0' && *s1 == *s2) {
 		++s1;
