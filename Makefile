@@ -30,6 +30,7 @@ KERNEL_SOURCES := \
 	random.c \
 	time.c \
 	devices/ds3231.c \
+	math.c \
 
 ARMSTUB_SOURCES := armstub.s
 
