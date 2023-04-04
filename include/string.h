@@ -65,13 +65,28 @@ inline int strcmp(char const* restrict s1, char const* restrict s2) {
 	return *s1 - *s2;
 }
 
-// Does add a NUL terminator as the string's length may vary.
-void u64_to_str(char buf[21], u64 value);
-// Does add a NUL terminator as the string's length may vary.
-void i64_to_str(char buf[22], u64 value);
-// Does add a NUL terminator as the string's length may vary.
-void f64_to_str(char buf[25], f64 value);
+inline char* strcpy(char* restrict dest, char const* restrict src) {
+	while (*src != '\0') {
+		*dest++ = *src++;
+	}
+	*dest = '\0';
+	return dest;
+}
+
+inline bool isdigit(char const ch) {
+	return ch >= '0' && ch <= '9';
+}
+
 // Does not add a NUL terminator as the string will always be 16 characters long.
 void u64_to_str_hex(char buf[16], u64 value);
 // Does not add a NUL terminator as the string will always be 2 characters long.
 void u8_to_str_hex(char buf[2], u8 value);
+
+u64 parse_u64(char const* source, usize source_len, bool* valid);
+i64 parse_i64(char const* source, usize source_len, bool* valid);
+f64 parse_f64(char const* source, usize source_len, bool* valid);
+
+char char_to_upper(char ch);
+char char_to_lower(char ch);
+void str_make_uppercase(char* str);
+void str_make_lowercase(char* str);

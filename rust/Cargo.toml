@@ -4,16 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
+# This allows us to link with C.
 crate-type = ["staticlib"]
 
 [dependencies]
-itoa = "1"
-ryu = "1"
-
-[profile.dev]
-panic = "abort"
 
 [profile.release]
+# Make sure our code is as small as possible, at the expense of compile time.
 panic = "abort"
 lto = "fat"
 codegen-units = 1

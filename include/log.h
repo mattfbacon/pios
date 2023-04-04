@@ -1,11 +1,14 @@
 #pragma once
 
-#define LOG_LEVEL_TRACE 0
-#define LOG_LEVEL_DEBUG 1
-#define LOG_LEVEL_INFO 2
-#define LOG_LEVEL_WARN 3
-#define LOG_LEVEL_ERROR 4
-#define LOG_LEVEL_FATAL 5
+// We give them a bit of space so we can add more later if necessary.
+// Make sure to keep this in sync with `rust/src/panic.rs`!
+
+#define LOG_LEVEL_TRACE 10
+#define LOG_LEVEL_DEBUG 20
+#define LOG_LEVEL_INFO 30
+#define LOG_LEVEL_WARN 40
+#define LOG_LEVEL_ERROR 50
+#define LOG_LEVEL_FATAL 60
 
 // Can be set in e.g. Makefile or environment variables.
 #ifndef LOG_LEVEL
