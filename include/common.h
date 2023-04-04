@@ -40,6 +40,9 @@ enum {
 
 	I64_MAX = 9223372036854775807LL,
 	I64_MIN = -I64_MAX - 1,
+
+	USIZE_MAX = U64_MAX,
+	USIZE_MIN = U64_MIN,
 };
 #pragma GCC diagnostic pop
 
