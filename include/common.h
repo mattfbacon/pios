@@ -14,39 +14,39 @@ typedef double f64;
 typedef u64 usize;
 typedef i64 isize;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wenum-too-large"  // Not an enum.
-enum {
-	U8_MIN = 0,
-	U8_MAX = 255,
+#define U8_MIN ((u8)0)
+#define U8_MAX ((u8)255)
 
-	U16_MIN = 0,
-	U16_MAX = 65536,
+#define U16_MIN ((u16)0)
+#define U16_MAX ((u16)65536)
 
-	U32_MIN = 0U,
-	U32_MAX = 4294967295U,
+#define U32_MIN ((u32)0U)
+#define U32_MAX ((u32)4294967295U)
 
-	U64_MIN = 0ULL,
-	U64_MAX = 18446744073709551615ULL,
+#define U64_MIN ((u64)0ULL)
+#define U64_MAX ((u64)18446744073709551615ULL)
 
-	I8_MAX = 127,
-	I8_MIN = -I8_MAX - 1,
+#define I8_MAX ((i8)127)
+#define I8_MIN ((i8)(-I8_MAX - (1)))
 
-	I16_MAX = 65535,
-	I16_MIN = -I16_MAX - 1,
+#define I16_MAX ((i16)65535)
+#define I16_MIN ((i16)(-I16_MAX - (1)))
 
-	I32_MAX = 2147483647,
-	I32_MIN = -I32_MAX - 1,
+#define I32_MAX ((i32)2147483647)
+#define I32_MIN ((i32)(-I32_MAX - (1)))
 
-	I64_MAX = 9223372036854775807LL,
-	I64_MIN = -I64_MAX - 1,
+#define I64_MAX ((i64)9223372036854775807LL)
+#define I64_MIN ((i64)(-I64_MAX - (1)))
 
-	USIZE_MAX = U64_MAX,
-	USIZE_MIN = U64_MIN,
-};
-#pragma GCC diagnostic pop
+#define USIZE_MAX ((usize)U64_MAX)
+#define USIZE_MIN ((usize)U64_MIN)
+
+#define ISIZE_MAX ((isize)I64_MAX)
+#define ISIZE_MIN ((isize)I64_MIN)
 
 #define NULL ((void*)0)
 
 #define offsetof __builtin_offsetof
 #define alignof __alignof__
+
+#define asm __asm__

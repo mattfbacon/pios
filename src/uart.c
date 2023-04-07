@@ -107,7 +107,7 @@ u8 uart_recv(void) {
 		sleep_micros(SLEEP_MIN_MICROS_FOR_INTERRUPTS);
 	}
 
-	return UART0->fifo;
+	return (u8)UART0->fifo;
 }
 
 void uart_send_str(char const* str) {

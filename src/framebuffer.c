@@ -6,14 +6,13 @@
 #include "log.h"
 #include "mailbox.h"
 
-struct framebuffer {
+static struct framebuffer {
+	framebuffer_color_t volatile* buffer;
 	u32 width;
 	u32 height;
 	u32 stride;
-	framebuffer_color_t volatile* buffer;
-};
-
-static struct framebuffer framebuffer = {};
+	u32 _pad0;
+} framebuffer = {};
 
 void framebuffer_init(void) {
 	LOG_DEBUG("initializing framebuffer");

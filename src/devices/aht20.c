@@ -41,7 +41,7 @@ static bool wait_until_not_busy(void) {
 	u8 status;
 
 	while (true) {
-		TRY(get_status(&status));
+		TRY(get_status(&status))
 		if (!(status & STATUS_BUSY)) {
 			break;
 		}
@@ -58,10 +58,10 @@ static struct aht20_data decode_sensor_data(u8 const data[6]) {
 
 	struct aht20_data ret;
 
-	u32 const humidity_raw = (data[1] << 12) | (data[2] << 4) | (data[3] >> 4);
+	u32 const humidity_raw = ((u32)data[1] << 12) | ((u32)data[2] << 4) | ((u32)data[3] >> 4);
 	ret.humidity = (f32)humidity_raw * humidity_factor;
 
-	u32 const temperature_raw = ((data[3] & 0xf) << 16) | (data[4] << 8) | data[5];
+	u32 const temperature_raw = (((u32)data[3] & 0xf) << 16) | ((u32)data[4] << 8) | (u32)data[5];
 	ret.temperature = (f32)temperature_raw * temperature_factor - 50.0f;
 
 	return ret;
@@ -72,13 +72,13 @@ bool aht20_init() {
 	LOG_DEBUG("initializing AHT20 sensor");
 
 	u8 buf = COMMAND_GET_STATUS;
-	TRY(send(&buf, 1));
+	TRY(send(&buf, 1))
 
 	u8 status;
-	TRY(get_status(&status));
+	TRY(get_status(&status))
 	// Apparently we're supposed to initialize some registers if this isn't true.
 	// We haven't implemented that, and it's never been an issue.
-	TRY((status & STATUS_INITIAL_EXPECTED_MASK) == STATUS_INITIAL_EXPECTED_MASK);
+	TRY((status & STATUS_INITIAL_EXPECTED_MASK) == STATUS_INITIAL_EXPECTED_MASK)
 
 	return true;
 }
@@ -92,12 +92,12 @@ bool aht20_measure(struct aht20_data* const ret) {
 	buf[0] = COMMAND_MEASURE;
 	buf[1] = 0x33;
 	buf[2] = 0x00;
-	TRY(send(buf, 3));
+	TRY(send(buf, 3))
 
 	sleep_micros(80'000);
 	wait_until_not_busy();
 
-	TRY(recv(buf, 7));
+	TRY(recv(buf, 7))
 
 	*ret = decode_sensor_data(buf);
 	LOG_DEBUG("sensor data: humidity %f, temperature %f", ret->humidity, ret->temperature);

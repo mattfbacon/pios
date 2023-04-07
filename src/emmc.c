@@ -67,7 +67,7 @@ static struct {
 	// There are more registers but none of them are necessary for this driver.
 } volatile* const EMMC = (void volatile*)(PERIPHERAL_BASE + 0x34'0000);
 
-enum {
+enum : u32 {
 	TIMEOUT_DEFAULT = 2'000,
 
 	RESPONSE_NONE = 0b00,
@@ -117,7 +117,7 @@ enum {
 
 	OCR_VOLTAGE_WINDOW = 0x00ff'8000,
 	OCR_SDHC_SUPPORT = 1 << 30,
-	OCR_DONE = 1 << 31,
+	OCR_DONE = 1u << 31,
 
 	RCA_MASK = 0xffff'0000,
 
@@ -166,16 +166,20 @@ enum emmc_command {
 };
 
 static struct {
-	void* buffer;
+	union read_or_write {
+		u32* read;
+		u32 const* write;
+	} buffer;
 	u32 transfer_blocks;
 	u32 last_response[4];
 	u32 relative_card_address;
 	u32 base_clock;
 	u32 last_error;
-	// High-capacity cards use block-based addressing, while normal-capacity cards use byte-based addressing, so we need to keep track of what kind our card is.
-	bool high_capacity;
 	// In blocks.
 	u32 capacity;
+	// High-capacity cards use block-based addressing, while normal-capacity cards use byte-based addressing, so we need to keep track of what kind our card is.
+	bool high_capacity;
+	u8 _pad0[3];
 } device = { 0 };
 
 static bool wait_reg_mask(u32 volatile* const reg, u32 const mask, bool const wanted_value, u32 const timeout_millis) {
@@ -246,7 +250,7 @@ static bool emmc_setup_clock(void) {
 	c1 |= get_clock_divider(device.base_clock, SD_CLOCK_ID);
 
 	c1 &= ~CTRL1_DATA_TIMEOUT_MASK;
-	c1 |= 11 << CTRL1_DATA_TIMEOUT_SHIFT;
+	c1 |= 11u << CTRL1_DATA_TIMEOUT_SHIFT;
 
 	EMMC->control[1] = c1;
 
@@ -281,8 +285,6 @@ static bool do_data_transfer(emmc_marshaled_command_t const command) {
 		write = true;
 	}
 
-	u32* data = (u32*)device.buffer;
-
 	for (u32 block = 0; block < device.transfer_blocks; ++block) {
 		wait_reg_mask(&EMMC->interrupt_flags, rw_interrupt_flag | INTERRUPT_DATA_ERROR, true, TIMEOUT_DEFAULT);
 
@@ -297,9 +299,9 @@ static bool do_data_transfer(emmc_marshaled_command_t const command) {
 		// I would prefer to put the branches inside the loop, but LICM doesn't seem to be able to optimize it.
 		// This collapses 128/256 branches to 1 in an incredibly hot loop.
 		if (write) {
-			if (data != NULL) {
+			if (device.buffer.write != NULL) {
 				for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
-					EMMC->data = *data++;
+					EMMC->data = *device.buffer.write++;
 				}
 			} else {
 				for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
@@ -308,7 +310,7 @@ static bool do_data_transfer(emmc_marshaled_command_t const command) {
 			}
 		} else {
 			for (u32 i = 0; i < EMMC_BLOCK_SIZE; i += sizeof(EMMC->data)) {
-				*data++ = EMMC->data;
+				*device.buffer.read++ = EMMC->data;
 			}
 		}
 	}
@@ -511,7 +513,7 @@ static bool emmc_card_reset(void) {
 
 	EMMC->control[1] = CTRL1_RESET_HOST;
 
-	TRY_MSG(wait_reg_mask(&EMMC->control[1], CTRL1_RESET_ALL, false, TIMEOUT_DEFAULT));
+	TRY_MSG(wait_reg_mask(&EMMC->control[1], CTRL1_RESET_ALL, false, TIMEOUT_DEFAULT))
 
 	enable_bus_power();
 	sleep_micros(3'000);
@@ -547,7 +549,7 @@ static bool emmc_card_reset(void) {
 	TRY_MSG(select_card())
 
 	if (!device.high_capacity) {
-		TRY_MSG(emmc_command(command_set_block_length, EMMC_BLOCK_SIZE, TIMEOUT_DEFAULT));
+		TRY_MSG(emmc_command(command_set_block_length, EMMC_BLOCK_SIZE, TIMEOUT_DEFAULT))
 	}
 
 	// Acknowledge any leftover interrupts, just to be safe.
@@ -556,7 +558,7 @@ static bool emmc_card_reset(void) {
 	return true;
 }
 
-bool do_data_command(bool const write, u8* const buffer, u32 const num_blocks, u32 block_start) {
+static bool do_data_command(bool const write, union read_or_write const buffer, u32 const num_blocks, u32 block_start) {
 	if (num_blocks == 0) {
 		LOG_DEBUG("data command with 0 blocks, returning early");
 		return true;
@@ -569,34 +571,28 @@ bool do_data_command(bool const write, u8* const buffer, u32 const num_blocks, u
 	device.transfer_blocks = num_blocks;
 	device.buffer = buffer;
 
-	u32 command;
-	if (write) {
-		if (device.transfer_blocks > 1) {
-			command = command_write_multiple;
-		} else {
-			command = command_write_block;
-		}
-	} else {
-		if (device.transfer_blocks > 1) {
-			command = command_read_multiple;
-		} else {
-			command = command_read_block;
-		}
-	}
+	static u32 COMMANDS[2][2] = {
+		{ command_read_block, command_read_multiple },
+		{ command_write_block, command_write_multiple },
+	};
+	u32 const command = COMMANDS[write][num_blocks > 1];
 
 	return emmc_command(command, block_start, 5'000);
 }
 
+// Unaligned accesses are fine.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
 bool emmc_read(u8* const buffer, u32 const start_block, u32 const num_blocks) {
 	LOG_DEBUG("reading %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
-	return do_data_command(false, buffer, num_blocks, start_block);
+	return do_data_command(false, (union read_or_write){ .read = (u32*)buffer }, num_blocks, start_block);
 }
 
 bool emmc_write(u8 const* const buffer, u32 const start_block, u32 const num_blocks) {
 	LOG_DEBUG("writing %u blocks starting at %u (0x%x)", num_blocks, start_block, start_block);
-	// Casting away `const` because the buffer will not be modified in the write mode.
-	return do_data_command(true, (u8*)buffer, num_blocks, start_block);
+	return do_data_command(true, (union read_or_write){ .write = (u32 const*)buffer }, num_blocks, start_block);
 }
+#pragma GCC diagnostic pop
 
 u32 emmc_capacity(void) {
 	return device.capacity;

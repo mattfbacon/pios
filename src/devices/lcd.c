@@ -42,13 +42,13 @@ enum {
 	PIN_BUTTON_LEFT = 4,
 };
 
-static mcp23017_pin_t const data_pins[] = { PIN_DATA0, PIN_DATA1, PIN_DATA2, PIN_DATA3 };
+static mcp23017_pin_t const DATA_PINS[] = { PIN_DATA0, PIN_DATA1, PIN_DATA2, PIN_DATA3 };
 
-static mcp23017_pin_t const outputs[] = {
+static mcp23017_pin_t const OUTPUTS[] = {
 	PIN_BACKLIGHT_RED, PIN_BACKLIGHT_GREEN, PIN_BACKLIGHT_BLUE, PIN_REG_SELECT, PIN_READ_WRITE, PIN_ENABLE, PIN_DATA0, PIN_DATA1, PIN_DATA2, PIN_DATA3,
 };
 
-static mcp23017_pin_t const inputs[] = {
+static mcp23017_pin_t const INPUTS[] = {
 	PIN_BUTTON_SELECT, PIN_BUTTON_RIGHT, PIN_BUTTON_DOWN, PIN_BUTTON_UP, PIN_BUTTON_LEFT,
 };
 
@@ -121,11 +121,11 @@ static void pulse_enable(void) {
 }
 
 static void send4(u8 const value) {
-	u16 outputs = (((u16)device.outputs[1]) << 8) | (u16)device.outputs[0];
+	u16 outputs = (u16)(device.outputs[1] << 8) | (u16)device.outputs[0];
 
 	for (u16 i = 0; i < 4; ++i) {
-		u16 const pin = data_pins[i];
-		u16 const output_bit = 1 << pin;
+		u16 const pin = DATA_PINS[i];
+		u16 const output_bit = (u16)(1 << pin);
 		outputs &= ~output_bit;
 		outputs |= (u16)(bool)(value & (1 << i)) << pin;
 	}
@@ -181,15 +181,15 @@ void lcd_init() {
 
 	LOG_TRACE("setting output modes");
 
-	for (usize i = 0; i < sizeof(outputs) / sizeof(outputs[0]); ++i) {
-		set_mode(outputs[i], mcp23017_mode_output);
+	for (usize i = 0; i < sizeof(OUTPUTS) / sizeof(OUTPUTS[0]); ++i) {
+		set_mode(OUTPUTS[i], mcp23017_mode_output);
 	}
 
 	LOG_TRACE("setting input modes");
 
-	for (usize i = 0; i < sizeof(inputs) / sizeof(inputs[0]); ++i) {
-		set_mode(inputs[i], mcp23017_mode_input);
-		set_pull(inputs[i], mcp23017_pull_up);
+	for (usize i = 0; i < sizeof(INPUTS) / sizeof(INPUTS[0]); ++i) {
+		set_mode(INPUTS[i], mcp23017_mode_input);
+		set_pull(INPUTS[i], mcp23017_pull_up);
 	}
 
 	LOG_TRACE("starting initialization handshake");
@@ -225,7 +225,7 @@ void lcd_set_backlight(bool const red, bool const green, bool const blue) {
 	LOG_DEBUG("setting backlight to red %@b green %@b blue %@b", red, green, blue);
 
 	// This is less for optimization and more for avoiding flickering when setting the backlight.
-	u16 pins = (u16)device.outputs[1] << 8 | device.outputs[0];
+	u16 pins = (u16)(device.outputs[1] << 8) | (u16)device.outputs[0];
 	pins &= ~BACKLIGHT_MASK;
 	pins |= (u16)(!red) << PIN_BACKLIGHT_RED | (u16)(!green) << PIN_BACKLIGHT_GREEN | (u16)(!blue) << PIN_BACKLIGHT_BLUE;
 	write_all(pins);
@@ -262,13 +262,13 @@ void lcd_set_display(bool const on, bool const cursor, bool const blink) {
 void lcd_shift_cursor(lcd_direction_t const direction) {
 	LOG_DEBUG("shifting cursor in direction", direction ? "right" : "left");
 
-	send_command(COMMAND_SHIFT | ((u8)direction << 2));
+	send_command(COMMAND_SHIFT | (u8)(direction << 2));
 }
 
 void lcd_shift_display(lcd_direction_t const direction) {
 	LOG_DEBUG("shifting display in direction", direction ? "right" : "left");
 
-	send_command(COMMAND_SHIFT | SHIFT_DISPLAY | ((u8)direction << 2));
+	send_command(COMMAND_SHIFT | SHIFT_DISPLAY | (u8)(direction << 2));
 }
 
 void lcd_set_position(u8 const line, u8 const column) {

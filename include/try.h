@@ -14,13 +14,6 @@
 		return false; \
 	}
 
-#define fail(_fmt, ...) \
-	do { \
-		LOG_FATAL("failed: " _fmt, ##__VA_ARGS__); \
-		halt(); \
-	} while (0);
+#define fail(_fmt, ...) ((void)(LOG_FATAL("failed: " _fmt, ##__VA_ARGS__), halt()))
 
-#define assert(_cond, ...) \
-	if (!(_cond)) { \
-		fail(__VA_ARGS__); \
-	}
+#define assert(_cond, ...) ((_cond) ? ((void)0) : ((void)fail(__VA_ARGS__)))

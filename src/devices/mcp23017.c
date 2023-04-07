@@ -126,7 +126,7 @@ bool mcp23017_write_all(mcp23017_device_t* const this, u16 const values) {
 
 	if (new_bank0 != old_bank0) {
 		if (new_bank1 != old_bank1) {
-			return write_u16(this->address, REG_GPIO, (u16)new_bank1 << 8 | new_bank0);
+			return write_u16(this->address, REG_GPIO, (u16)(new_bank1 << 8) | new_bank0);
 		} else {
 			return write_u8(this->address, REG_GPIO, new_bank0);
 		}

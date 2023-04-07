@@ -4,6 +4,9 @@
 #include "malloc.h"
 #include "uart.h"
 
+// Only exposed to assembly.
+void standard_init(void);
+
 void standard_init(void) {
 	exception_init();
 

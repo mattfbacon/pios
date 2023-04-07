@@ -34,6 +34,19 @@ inline void memmove(void* const dest_, void const* const src_, usize const lengt
 	}
 }
 
+inline int memcmp(void const* const s1_, void const* const s2_, usize const n) {
+	u8 const* const s1 = s1_;
+	u8 const* const s2 = s2_;
+
+	for (usize i = 0; i < n; ++i) {
+		if (s1[i] != s2[i]) {
+			return s1[i] - s2[i];
+		}
+	}
+
+	return 0;
+}
+
 inline usize strlen(char const* str) {
 	usize ret = 0;
 

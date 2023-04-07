@@ -4,7 +4,7 @@
 
 #include "time.h"
 
-enum {
+enum : i64 {
 	SECONDS_PER_MINUTE = 60,
 	MINUTES_PER_HOUR = 60,
 	HOURS_PER_DAY = 24,
@@ -35,9 +35,9 @@ enum {
 static u8 month_days[MONTHS_PER_YEAR] = { 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29 };
 
 static time_t year_to_secs(i64 const year, bool* const is_leap) {
-	// The years 1902..=1938.
+	// The years 1902..=2038.
 	if (year >= 2 && year <= 138) {
-		i32 const year_1968 = year - 68;
+		i32 const year_1968 = (i32)(year - 68);
 
 		i32 leaps = (year_1968 / 4) * LEAPS_PER_4;
 		*is_leap = year_1968 % 4 == 0;
@@ -50,7 +50,7 @@ static time_t year_to_secs(i64 const year, bool* const is_leap) {
 
 	i64 const year_2000 = year - 100;
 
-	i32 cycles_400 = year_2000 / 400;
+	i32 cycles_400 = (i32)(year_2000 / 400);
 	i32 within_400 = year_2000 % 400;
 
 	if (within_400 < 0) {
@@ -79,13 +79,13 @@ bool time_is_leap_year(i32 const year) {
 	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 }
 
-u32 time_month_to_day_of_year(u8 const month, bool const is_leap_year) {
+u16 time_month_to_day_of_year(u8 const month, bool const is_leap_year) {
 	// Prefix sums of days based on month.
 	// Each entry is for the 1st of that month.
 	// February has 28 days, i.e., it is not a leap year.
-	static const u32 lut[MONTHS_PER_YEAR] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+	static const u16 lut[MONTHS_PER_YEAR] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
-	u32 days = lut[month];
+	u16 days = lut[month];
 
 	// Add the 29th day to February if necessary (month 1 is February since we are zero-indexed).
 	if (is_leap_year && month > 1) {
@@ -118,7 +118,7 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 		weekday += DAYS_PER_WEEK;
 	}
 
-	i32 cycles_400_years = days / DAYS_PER_400_YEARS;
+	i32 cycles_400_years = (i32)(days / DAYS_PER_400_YEARS);
 	i32 days_within = days % DAYS_PER_400_YEARS;
 	if (days_within < 0) {
 		days_within += DAYS_PER_400_YEARS;
@@ -161,6 +161,7 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 		return false;
 	}
 
+	// From relative to March to relative to January.
 	month += 2;
 	if (month >= MONTHS_PER_YEAR) {
 		month -= MONTHS_PER_YEAR;
@@ -168,20 +169,20 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 	}
 
 	ret->year = years + 100;
-	ret->month = month;
-	ret->day_of_month = days_within + 1;
-	ret->weekday = weekday;
-	ret->day_of_year = day_of_year;
-	ret->hour = seconds_within_day / SECONDS_PER_HOUR;
-	ret->minute = seconds_within_day / SECONDS_PER_MINUTE % MINUTES_PER_HOUR;
-	ret->second = seconds_within_day % SECONDS_PER_MINUTE;
+	ret->month = (u8)month;
+	ret->day_of_month = (u8)days_within + 1;
+	ret->weekday = (u8)weekday;
+	ret->day_of_year = (u16)day_of_year;
+	ret->hour = (u8)(seconds_within_day / SECONDS_PER_HOUR);
+	ret->minute = (u8)(seconds_within_day / SECONDS_PER_MINUTE % MINUTES_PER_HOUR);
+	ret->second = (u8)(seconds_within_day % SECONDS_PER_MINUTE);
 
 	return true;
 }
 
 time_t time_unix_from_components(struct time_components const* const components) {
 	i64 year = (i64)components->year;
-	i32 month = (i32)components->month;
+	u8 month = components->month;
 
 	// We need to do this check with the month because it affects leap-year checking.
 	// For all other fields it would have no effect on the output.

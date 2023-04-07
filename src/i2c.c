@@ -53,7 +53,7 @@ bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
 
 	while (amount_read < len && !(BASE->status & STATUS_DONE)) {
 		while (amount_read < len && (BASE->status & STATUS_CAN_READ)) {
-			buf[amount_read] = BASE->fifo;
+			buf[amount_read] = (u8)BASE->fifo;
 			++amount_read;
 		}
 		asm volatile("isb");

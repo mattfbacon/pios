@@ -6,6 +6,7 @@ typedef struct __attribute__((packed)) guid {
 	u8 d[2];
 	u8 e[6];
 } guid_t;
+_Static_assert(sizeof(guid_t) == 16);
 
 typedef u64 lba_t;
 

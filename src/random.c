@@ -21,7 +21,7 @@ enum {
 	WARMUP_COUNT = 0x40'000,
 };
 
-struct {
+static struct {
 	u32 control;
 	u32 rng_soft_reset;
 	u32 rbg_soft_reset;

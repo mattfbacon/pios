@@ -26,7 +26,7 @@ void gpio_set_mode(gpio_pin_t const pin, gpio_mode_t const mode) {
 
 	u32 volatile* const reg = &GPIO_BASE->mode[pin / 10];
 	u32 const shift = (pin % 10) * 3;
-	u32 const mask = 0b111 << shift;
+	u32 const mask = 0b111u << shift;
 
 	u32 value = *reg;
 	value &= ~mask;
@@ -58,7 +58,7 @@ void gpio_set_pull(gpio_pin_t const pin, gpio_pull_t const pull) {
 	u32 volatile* const reg = &GPIO_BASE->pull[pin / 16];
 	u32 const shift = (pin % 16) * 2;
 
-	u32 const mask = 0b11 << shift;
+	u32 const mask = 0b11u << shift;
 
 	u32 value = *reg;
 	value &= ~mask;

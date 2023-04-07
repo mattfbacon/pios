@@ -19,12 +19,12 @@ struct pwm_regs {
 static struct pwm_regs volatile* const PWM0_BASE = (struct pwm_regs volatile*)(PERIPHERAL_BASE + 0x20c000);
 static struct pwm_regs volatile* const PWM1_BASE = (struct pwm_regs volatile*)(PERIPHERAL_BASE + 0x20c800);
 
-enum {
+enum : u32 {
 	CONTROL_MASK = 0xff,
 	CONTROL_CLEAR_FIFO = 1 << 6,
 
 	STATUS_FIFO_FULL = 1,
-	STATUS_ERROR_MASK = 0b100111100,
+	STATUS_ERROR_MASK = 0b1'0011'1100,
 };
 
 static struct pwm_regs volatile* controller_base(u8 const controller) {

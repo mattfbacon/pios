@@ -38,10 +38,10 @@ bool ds3231_get_time(struct time_components* const ret) {
 		REG_DATETIME,
 	};
 
-	TRY(i2c_send(ADDRESS, buf, 1));
+	TRY(i2c_send(ADDRESS, buf, 1))
 	// Delay determined from testing.
 	sleep_micros(100);
-	TRY(i2c_recv(ADDRESS, buf, sizeof(buf)));
+	TRY(i2c_recv(ADDRESS, buf, sizeof(buf)))
 
 	ret->second = bcd_decode(buf[0]);
 
@@ -72,7 +72,7 @@ bool ds3231_get_time(struct time_components* const ret) {
 }
 
 bool ds3231_set_time(struct time_components const* const time) {
-	TRY_MSG(time->year >= 0 && time->year < 200);
+	TRY_MSG(time->year >= 0 && time->year < 200)
 
 	u8 const buf[8] = {
 		REG_DATETIME,
@@ -83,10 +83,10 @@ bool ds3231_set_time(struct time_components const* const time) {
 		time->weekday + 1,
 		bcd_encode(time->day_of_month),
 		bcd_encode(time->month + 1) | (time->year >= 100 ? (1 << 7) : 0),
-		bcd_encode(time->year % 100),
+		bcd_encode((u8)(time->year % 100)),
 	};
 
-	TRY(i2c_send(ADDRESS, buf, sizeof(buf)));
+	TRY(i2c_send(ADDRESS, buf, sizeof(buf)))
 	// Delay determined from testing.
 	sleep_micros(1'000);
 

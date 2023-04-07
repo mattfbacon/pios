@@ -20,10 +20,10 @@ static struct {
 	u32 write;
 } volatile* const VIDEOCORE_MAILBOX = (void volatile*)(PERIPHERAL_BASE + 0xb880);
 
-enum {
+enum : u32 {
 	MAILBOX_RESPONSE = 1u << 31,
-	STATUS_WRITE_FULL = 1 << 31,
-	STATUS_READ_EMPTY = 1 << 30,
+	STATUS_WRITE_FULL = 1u << 31,
+	STATUS_READ_EMPTY = 1u << 30,
 };
 
 bool mailbox_call(mailbox_channel_t const channel) {

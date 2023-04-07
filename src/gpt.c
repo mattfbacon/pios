@@ -5,20 +5,24 @@
 
 #include "emmc.h"
 #include "gpt.h"
+#include "string.h"
 #include "try.h"
 
-enum {
+enum : u64 {
 	GPT_SIGNATURE = 0x5452'4150'2049'4645ull,
-	GPT_REVISION = 0x0001'0000u,
-	GPT_HEADER_SIZE = 92,
+};
 
+enum : u32 {
+	GPT_REVISION = 0x0001'0000u,
+};
+
+enum {
+	GPT_HEADER_SIZE = 92,
 	GPT_HEADER_LBA = 1,
 };
 
 static bool guid_equal(guid_t const* const a, guid_t const* const b) {
-	u64 const* const a_bytes = (u64 const*)a;
-	u64 const* const b_bytes = (u64 const*)b;
-	return a_bytes[0] == b_bytes[0] && a_bytes[1] == b_bytes[1];
+	return memcmp(a, b, sizeof(guid_t)) == 0;
 }
 
 struct __attribute__((packed)) gpt_header {
@@ -60,7 +64,12 @@ bool find_partition_by_guid(guid_t const* const expected_id, struct lba_range* c
 	TRY_MSG(header->revision == GPT_REVISION)
 	TRY_MSG(header->header_size >= GPT_HEADER_SIZE)
 
-	u32 const table_base = header->partitions_table_start_lba;
+	// Could possibly overflow on disks larger than 2.2 TB, but is expected to almost always be simply 2.
+	if (header->partitions_table_start_lba > U32_MAX) {
+		LOG_ERROR("partition table start LBA is way too big");
+		return false;
+	}
+	u32 const table_base = (u32)header->partitions_table_start_lba;
 	u32 const num_entries = header->number_of_partitions;
 	u32 const entry_size = header->size_of_partitions_table_entry;
 	TRY_MSG(entry_size >= sizeof(struct gpt_partition_entry))

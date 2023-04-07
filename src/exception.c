@@ -35,6 +35,10 @@
 #include "log.h"
 #include "timer.h"
 
+// These functions are only exposed to assembly, so we put their prototypes here.
+void __attribute__((noreturn)) exception_handle_invalid(u64 index);
+void exception_handle_el1_irq(void);
+
 enum {
 	IRQ0_TIMER0 = 1 << 0,
 	IRQ0_TIMER1 = 1 << 1,
@@ -65,7 +69,6 @@ void exception_init(void) {
 	asm volatile("msr daifclr, #0b0110");
 }
 
-// only exposed to assembly
 void exception_handle_invalid(u64 const index) {
 	u64 current_el, syndrome, address, fault_address;
 	asm("mrs %0, CurrentEL" : "=r"(current_el));
@@ -76,7 +79,6 @@ void exception_handle_invalid(u64 const index) {
 	halt();
 }
 
-// only exposed to assembly
 void exception_handle_el1_irq(void) {
 	u32 const pending0 = IRQ_BASE->irq0_pending[0];
 

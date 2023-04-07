@@ -26,6 +26,10 @@
 //
 // Conversely, when freeing a block, if it is before the current head, we can update the head.
 
+// We do a little casting, so:
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #include "base.h"
 #include "mailbox.h"
 #include "malloc.h"
@@ -34,9 +38,9 @@
 
 extern char _end[];
 
-enum {
+enum : u32 {
 	BLOCK_ALIGNMENT = 8u,
-	ADDRESS_MASK = ~(BLOCK_ALIGNMENT - 1),
+	ADDRESS_MASK = ~(BLOCK_ALIGNMENT - 1u),
 
 	FLAGS_FREE = 1 << 0,
 	FLAGS_LAST = 1 << 1,

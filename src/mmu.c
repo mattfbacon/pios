@@ -4,7 +4,7 @@
 
 #include "base.h"
 
-enum {
+enum : u64 {
 	PAGE_SHIFT = 12,
 	TABLE_SHIFT = 9,
 	SECTION_SHIFT = PAGE_SHIFT + TABLE_SHIFT,
@@ -64,7 +64,7 @@ static void create_table_entry(table_t table, void const* const next_table, virt
 static void create_block_map(table_t pmd, virtual_addr_t const virtual_start, virtual_addr_t const virtual_end, physical_addr_t physical_base_) {
 	u64 const start_index = virtual_start >> SECTION_SHIFT & (ENTRIES_PER_TABLE - 1);
 	u64 const end_index = ((virtual_end >> SECTION_SHIFT) - 1) & (ENTRIES_PER_TABLE - 1);
-	u64 const physical_base = physical_base_ & ~((1 << SECTION_SHIFT) - 1);
+	u64 const physical_base = physical_base_ & ~((1llu << SECTION_SHIFT) - 1);
 	for (u64 i = start_index; i <= end_index; ++i) {
 		physical_addr_t const this_base = physical_base + (SECTION_SIZE * i);
 		u64 const flags = this_base >= DEVICE_BASE ? TD_DEVICE_BLOCK_FLAGS : TD_KERNEL_BLOCK_FLAGS;
@@ -77,6 +77,9 @@ static struct {
 	table_t pud;
 	table_t pmds[NUM_PMDS];
 } page_table __attribute__((aligned(PAGE_SIZE)));
+
+// Only exposed to assembly.
+void mmu_init(void);
 
 void mmu_init(void) {
 	create_table_entry(page_table.pgd, page_table.pud, 0, PGD_SHIFT, TD_KERNEL_TABLE_FLAGS);
