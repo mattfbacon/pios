@@ -64,7 +64,7 @@ bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
 	bool const success = !(status & STATUS_ACK_ERROR) && !(status & STATUS_CLOCK_STRETCH_TIMEOUT) && amount_read == len;
 
 	if (success) {
-		LOG_TRACE("received from address %u the following %u bytes of data: %D", address, len, buf, len);
+		LOG_TRACE("received from address %u the following %u bytes of data: %@d", address, len, buf, len);
 	} else {
 		LOG_TRACE("receive from address %u failed; status is %x", address, status);
 	}
@@ -73,7 +73,7 @@ bool i2c_recv(i2c_address_t const address, u8* const buf, u32 const len) {
 }
 
 bool i2c_send(i2c_address_t const address, u8 const* const buf, u32 const len) {
-	LOG_DEBUG("sending to address %u the following %u bytes of data: %D", address, len, buf, len);
+	LOG_DEBUG("sending to address %u the following %u bytes of data: %@d", address, len, buf, len);
 
 	BASE->peer_address = (u32)address;
 	BASE->control = CONTROL_CLEAR_FIFO;

@@ -222,7 +222,7 @@ void lcd_init() {
 }
 
 void lcd_set_backlight(bool const red, bool const green, bool const blue) {
-	LOG_DEBUG("setting backlight to red %B green %B blue %B", red, green, blue);
+	LOG_DEBUG("setting backlight to red %@b green %@b blue %@b", red, green, blue);
 
 	// This is less for optimization and more for avoiding flickering when setting the backlight.
 	u16 pins = (u16)device.outputs[1] << 8 | device.outputs[0];
@@ -244,7 +244,7 @@ void lcd_go_home(void) {
 }
 
 void lcd_set_display(bool const on, bool const cursor, bool const blink) {
-	LOG_DEBUG("setting display flags: on=%B cursor=%B blink=%B", on, cursor, blink);
+	LOG_DEBUG("setting display flags: on=%@b cursor=%@b blink=%@b", on, cursor, blink);
 
 	u8 command = COMMAND_SET_DISPLAY;
 	if (on) {

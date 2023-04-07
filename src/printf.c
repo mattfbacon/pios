@@ -24,9 +24,11 @@ static u64 str_to_u64(char const* const source, char const** const out_end) {
 		++end;
 	}
 	bool valid;
-	u64 const ret = parse_u64(source, end - source, &valid);
+	u64 const ret = parse_u64(source, (usize)(end - source), &valid);
 	*out_end = end;
-	return valid ? ret : 0;
+	// If it's not valid but only received digits, it must have overflowed.
+	// The largest possible value will suffice.
+	return valid ? ret : U64_MAX;
 }
 
 static void write_str(printf_write_callback_t const write, void* const user, char const* str, usize max_length) {
@@ -43,10 +45,10 @@ static void write_bytes_hex(printf_write_callback_t const write, void* const use
 	}
 }
 
-usize dprintf(printf_write_callback_t const write, void* user, char const* fmt, ...) {
+isize dprintf(printf_write_callback_t const write, void* user, char const* fmt, ...) {
 	__builtin_va_list args;
 	__builtin_va_start(args, fmt);
-	usize const ret = vdprintf(write, user, fmt, args);
+	isize const ret = vdprintf(write, user, fmt, args);
 	__builtin_va_end(args);
 	return ret;
 }
@@ -80,6 +82,7 @@ enum format_conversion {
 	format_conversion_u,
 	format_conversion_o,
 	format_conversion_x,
+	format_conversion_b,
 	format_conversion_e,
 	format_conversion_f,
 	format_conversion_g,
@@ -90,32 +93,31 @@ enum format_conversion {
 	format_conversion_literal_percent,
 
 	// Our additions:
-	// %D: takes `u8 const* data, usize length` and prints hex bytes.
 	format_conversion_data,
-	// %B: takes `bool` and prints `true` or `false`
 	format_conversion_boolean,
 };
 
 struct format_specifier {
-	bool alternate;
+	u32 width;
+	// `U32_MAX` means none specified (or the user specified that value; same result).
+	u32 precision;
+
 	enum format_padding padding;
 	enum format_sign sign;
-
-	bool width_dynamic;
-	// 0 means none specified.
-	u32 width;
-
-	bool precision_dynamic;
-	// 0 means none specified.
-	u32 precision;
 
 	enum format_length length_modifier;
 
 	enum format_conversion conversion;
 	bool conversion_capital;
 
-	// If not `NULL`, print this error and fail.
-	char const* error;
+	bool alternate;
+
+	bool width_dynamic;
+	bool precision_dynamic;
+
+	bool error;
+
+	u8 _pad0[3];
 };
 
 static struct format_specifier parse_format_specifier(char const** const fmt_ptr) {
@@ -131,22 +133,19 @@ static struct format_specifier parse_format_specifier(char const** const fmt_ptr
 		.length_modifier = format_length_default,
 		// .conversion = to be set,
 		.conversion_capital = false,
-		.error = NULL,
+		.error = false,
 	};
 
-#define ERROR(_message) \
-	return (struct format_specifier){ \
-		.error = (_message), \
-	};
+#define ERROR(...) return (LOG_ERROR(__VA_ARGS__), ret.error = true, ret)
 #define EOI_CHECK \
 	if (*fmt == '\0') { \
-		ERROR("unexpected end of input") \
+		ERROR("unexpected end of input"); \
 	}
 
 	EOI_CHECK
 
 	if (*fmt == '$') {
-		ERROR("$ specifiers not yet implemented")
+		ERROR("$ specifiers not implemented");
 	}
 
 	for (; *fmt != '\0'; ++fmt) {
@@ -184,7 +183,7 @@ flags_done:;
 		ret.width_dynamic = true;
 		++fmt;
 	} else if (*fmt >= '1' && *fmt <= '9') {
-		ret.width = str_to_u64(fmt, &fmt);
+		ret.width = (u32)str_to_u64(fmt, &fmt);
 	}
 
 	EOI_CHECK
@@ -197,7 +196,7 @@ flags_done:;
 			ret.precision_dynamic = true;
 			++fmt;
 		} else if (*fmt >= '1' && *fmt <= '9') {
-			ret.precision = str_to_u64(fmt, &fmt);
+			ret.precision = (u32)str_to_u64(fmt, &fmt);
 		}
 		EOI_CHECK
 	}
@@ -231,59 +230,81 @@ flags_done:;
 
 	EOI_CHECK
 
-	switch (*fmt) {
-		// Standard:
-		case 'd':
-		case 'i':
-			ret.conversion = format_conversion_d;
-			break;
-		case 'o':
-			ret.conversion = format_conversion_o;
-			break;
-		case 'u':
-			ret.conversion = format_conversion_u;
-			break;
-		case 'x':
-		case 'X':
-			ret.conversion = format_conversion_x;
-			break;
-		case 'e':
-		case 'E':
-			ret.conversion = format_conversion_e;
-			break;
-		case 'f':
-		case 'F':
-			ret.conversion = format_conversion_f;
-			break;
-		case 'g':
-		case 'G':
-			ret.conversion = format_conversion_g;
-			break;
-		case 'c':
-			ret.conversion = format_conversion_c;
-			break;
-		case 's':
-			ret.conversion = format_conversion_s;
-			break;
-		case 'p':
-			ret.conversion = format_conversion_p;
-			break;
-		case 'n':
-			ret.conversion = format_conversion_n;
-			break;
-		case '%':
-			ret.conversion = format_conversion_literal_percent;
-			break;
+	enum {
+		ns_standard,
+		ns_ours,
+	} conversion_namespace
+		= ns_standard;
+	// Namespace prefix for our additions so they don't conflict with the standard ones.
+	if (*fmt == '@') {
+		conversion_namespace = ns_ours;
+		++fmt;
+	}
 
-		// Our additions:
-		case 'D':
-			ret.conversion = format_conversion_data;
+	switch (conversion_namespace) {
+		case ns_standard:
+			switch (*fmt) {
+				case 'd':
+				case 'i':
+					ret.conversion = format_conversion_d;
+					break;
+				case 'o':
+					ret.conversion = format_conversion_o;
+					break;
+				case 'u':
+					ret.conversion = format_conversion_u;
+					break;
+				case 'x':
+				case 'X':
+					ret.conversion = format_conversion_x;
+					break;
+				case 'b':
+				case 'B':
+					ret.conversion = format_conversion_b;
+					break;
+				case 'e':
+				case 'E':
+					ret.conversion = format_conversion_e;
+					break;
+				case 'f':
+				case 'F':
+					ret.conversion = format_conversion_f;
+					break;
+				case 'g':
+				case 'G':
+					ret.conversion = format_conversion_g;
+					break;
+				case 'c':
+					ret.conversion = format_conversion_c;
+					break;
+				case 's':
+					ret.conversion = format_conversion_s;
+					break;
+				case 'p':
+					ret.conversion = format_conversion_p;
+					break;
+				case 'n':
+					ret.conversion = format_conversion_n;
+					break;
+				case '%':
+					ret.conversion = format_conversion_literal_percent;
+					break;
+				default:
+					ERROR("invalid %s format specifier %c", "standard", *fmt);
+			}
 			break;
-		case 'B':
-			ret.conversion = format_conversion_boolean;
+		case ns_ours:
+			switch (*fmt) {
+				case 'd':
+					ret.conversion = format_conversion_data;
+					break;
+				case 'b':
+					ret.conversion = format_conversion_boolean;
+					break;
+				default:
+					ERROR("invalid %s format specifier %c", "ours-namespaced", *fmt);
+			}
 			break;
-		default:
-			ERROR("invalid format specifier")
 	}
 
 	ret.conversion_capital = *fmt <= 'Z';
@@ -359,7 +380,7 @@ static struct fmt_args specifier_to_args(struct format_specifier const* specifie
 	};
 }
 
-usize vdprintf(printf_write_callback_t const write_, void* const user_, char const* fmt, __builtin_va_list args) {
+isize vdprintf(printf_write_callback_t const write_, void* const user_, char const* fmt, __builtin_va_list args) {
 	struct write_wrapper wrapper_user = {
 		.bytes_written = 0,
 		.inner = write_,
@@ -377,17 +398,16 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 
 		++fmt;
 		struct format_specifier specifier = parse_format_specifier(&fmt);
-		if (specifier.error != NULL) {
-			LOG_ERROR("%s", specifier.error);
+		if (specifier.error) {
 			return -1;
 		}
 
 		if (specifier.width_dynamic) {
-			specifier.width = __builtin_va_arg(args, int);
+			specifier.width = (u32) __builtin_va_arg(args, int);
 		}
 
 		if (specifier.precision_dynamic) {
-			specifier.precision = __builtin_va_arg(args, int);
+			specifier.precision = (u32) __builtin_va_arg(args, int);
 		}
 
 		switch (specifier.conversion) {
@@ -395,37 +415,69 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 			case format_conversion_d: {
 				bool const is_signed = specifier.conversion == format_conversion_d;
 
-				i64 value;
+				// We need to be careful about sign-extension here.
+				// For example, this behavior may be surprising:
+				_Static_assert((u64)(i64)(i8)(u8)255 != 255);
+				// This is because `255u8` is interpreted as `-1i8`, then sign-extended to `-1i64`, which is interpreted as `U64_MAX`.
+				// On the other hand, this works properly:
+				_Static_assert((i64)(u64)(u8)255 == 255);
+				// This is because once we've promoted to `u64` the cast to `i64` will not perform any sign-extension so the value will be preserved.
+
+				union {
+					i64 signed_;
+					u64 unsigned_;
+				} value;
+
 				switch (specifier.length_modifier) {
 					case format_length_hh: {
-						value = is_signed ? (i8) __builtin_va_arg(args, i32) : (u64)(u8) __builtin_va_arg(args, u32);
+						if (is_signed) {
+							value.signed_ = (i8) __builtin_va_arg(args, i32);
+						} else {
+							value.unsigned_ = (u8) __builtin_va_arg(args, u32);
+						}
 					} break;
 					case format_length_h: {
-						value = is_signed ? (i16) __builtin_va_arg(args, i32) : (u64)(u16) __builtin_va_arg(args, u32);
+						if (is_signed) {
+							value.signed_ = (i16) __builtin_va_arg(args, i32);
+						} else {
+							value.unsigned_ = (u16) __builtin_va_arg(args, u32);
+						}
 					} break;
 					case format_length_default: {
-						value = is_signed ? __builtin_va_arg(args, i32) : (u64) __builtin_va_arg(args, u32);
+						if (is_signed) {
+							value.signed_ = __builtin_va_arg(args, i32);
+						} else {
+							value.unsigned_ = __builtin_va_arg(args, u32);
+						}
 					} break;
 					case format_length_l: {
-						value = __builtin_va_arg(args, i64);
+						// Yes, `i64` and `u64` will behave the same here,
+						// but accessing an inactive variant in a union is not really a good idea
+						// (regardless of whether it's formally Undefined Behavior, which it seems not to be)
+						// so let's not do that, and instead trust the optimizer to remove this branch.
+						if (is_signed) {
+							value.signed_ = __builtin_va_arg(args, i64);
+						} else {
+							value.unsigned_ = __builtin_va_arg(args, u64);
+						}
 					} break;
 				}
 
 				struct fmt_args const fmt_args = specifier_to_args(&specifier);
 				if (is_signed) {
-					fmt_i64(write_wrapper, user, value, &fmt_args);
+					fmt_i64(write_wrapper, user, value.signed_, &fmt_args);
 				} else {
-					fmt_u64(write_wrapper, user, value, &fmt_args);
+					fmt_u64(write_wrapper, user, value.unsigned_, &fmt_args);
 				}
 			} break;
 			case format_conversion_p:
 				specifier.conversion = format_conversion_x;
 				specifier.length_modifier = format_length_l;
 				specifier.alternate = true;
+				[[fallthrough]];
 			case format_conversion_x:
-			case format_conversion_o: {
-				bool const octal = specifier.conversion == format_conversion_o;
-
+			case format_conversion_o:
+			case format_conversion_b: {
 				u64 value;
 				switch (specifier.length_modifier) {
 					case format_length_hh: {
@@ -442,13 +494,25 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 					} break;
 				}
 
+				void (*fmt_fn)(printf_write_callback_t write, void* user, u64 value, struct fmt_args const* args);
+				switch (specifier.conversion) {
+					case format_conversion_x:
+						fmt_fn = fmt_u64_hex;
+						break;
+					case format_conversion_o:
+						fmt_fn = fmt_u64_oct;
+						break;
+					case format_conversion_b:
+						fmt_fn = fmt_u64_bin;
+						break;
+					default:
+						__builtin_unreachable();
+				}
+
 				printf_write_callback_t const write = specifier.conversion_capital ? write_wrapper_upper : write_wrapper_lower;
 				struct fmt_args const fmt_args = specifier_to_args(&specifier);
-				if (octal) {
-					fmt_u64_oct(write, user, value, &fmt_args);
-				} else {
-					fmt_u64_hex(write, user, value, &fmt_args);
-				}
+
+				fmt_fn(write, user, value, &fmt_args);
 			} break;
 			case format_conversion_e:
 			case format_conversion_f:
@@ -467,7 +531,7 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 						use_exp = false;
 						break;
 					case format_conversion_g:
-						use_exp = value < 1e-4 || value > pow_u(10.0f, specifier.precision);
+						use_exp = value < 1e-4 || value > pow_f64_u32(10.0, specifier.precision);
 						break;
 					default:
 						__builtin_unreachable();
@@ -477,17 +541,17 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 			} break;
 			case format_conversion_c: {
 				if (specifier.length_modifier != format_length_default) {
-					LOG_ERROR("invalid length specifier for %%%c", 'c');
+					LOG_ERROR("invalid length specifier for %%%s", "c");
 					return -1;
 				}
 
-				char const ch = (char)__builtin_va_arg(args, int);
-				write_str_with_padding(write_wrapper, user, &ch, specifier.padding, specifier.width, 1);
+				char const value = (char)__builtin_va_arg(args, int);
+				write_str_with_padding(write_wrapper, user, &value, specifier.padding, specifier.width, 1);
 
 			} break;
 			case format_conversion_s: {
 				if (specifier.length_modifier != format_length_default) {
-					LOG_ERROR("invalid length specifier for %%%c", 's');
+					LOG_ERROR("invalid length specifier for %%%s", "s");
 					return -1;
 				}
 
@@ -498,19 +562,19 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 				switch (specifier.length_modifier) {
 					case format_length_hh: {
 						u8* const arg = __builtin_va_arg(args, u8*);
-						*arg = wrapper_user.bytes_written;
+						*arg = (u8)wrapper_user.bytes_written;
 					} break;
 					case format_length_h: {
 						u16* const arg = __builtin_va_arg(args, u16*);
-						*arg = wrapper_user.bytes_written;
+						*arg = (u16)wrapper_user.bytes_written;
 					} break;
 					case format_length_default: {
 						u32* const arg = __builtin_va_arg(args, u32*);
-						*arg = wrapper_user.bytes_written;
+						*arg = (u32)wrapper_user.bytes_written;
 					} break;
 					case format_length_l: {
 						u64* const arg = __builtin_va_arg(args, u64*);
-						*arg = wrapper_user.bytes_written;
+						*arg = (u64)wrapper_user.bytes_written;
 					} break;
 				}
 			} break;
@@ -520,7 +584,7 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 			} break;
 			case format_conversion_data: {
 				if (specifier.length_modifier != format_length_default) {
-					LOG_ERROR("invalid length specifier for %%%c", 'D');
+					LOG_ERROR("invalid length specifier for %%%s", "@d");
 					return -1;
 				}
 
@@ -530,15 +594,22 @@ usize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 			} break;
 			case format_conversion_boolean: {
 				if (specifier.length_modifier != format_length_default) {
-					LOG_ERROR("invalid length specifier for %%%c", 'B');
+					LOG_ERROR("invalid length specifier for %%%s", "@b");
 					return -1;
 				}
 
-				int const arg = __builtin_va_arg(args, int);
-				write_str_with_padding(write_wrapper, user, arg ? "true" : "false", specifier.padding, specifier.width, USIZE_MAX);
+				static char const* const MESSAGES[2][2] = {
+					{ "f", "t" },
+					{ "false", "true" },
+				};
+
+				bool const arg = (bool)__builtin_va_arg(args, int);
+				write_str_with_padding(write_wrapper, user, MESSAGES[specifier.alternate][arg], specifier.padding, specifier.width, USIZE_MAX);
 			} break;
 		}
 	}
 
-	return wrapper_user.bytes_written;
+	// Will be negative already if the usize value overflows isize,
+	// so the postcondition of "Returns a negative value on error" is satisfied.
+	return (isize)wrapper_user.bytes_written;
 }

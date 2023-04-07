@@ -105,7 +105,7 @@ bool mcp23017_set_mode(mcp23017_device_t* const this, mcp23017_pin_t const pin, 
 }
 
 bool mcp23017_write(mcp23017_device_t* const this, mcp23017_pin_t const pin, bool const value) {
-	LOG_DEBUG("writing %B to pin %u", value, pin);
+	LOG_DEBUG("writing %@b to pin %u", value, pin);
 
 	io_delay();
 	return write_reg(this->address, REG_GPIO, this->outputs, pin, value);
@@ -144,7 +144,7 @@ bool mcp23017_read(mcp23017_device_t* const this, mcp23017_pin_t const pin, bool
 
 	io_delay();
 	TRY(read_reg(this->address, REG_GPIO, pin, ret))
-	LOG_DEBUG("read %B from pin %u", *ret, pin);
+	LOG_DEBUG("read %@b from pin %u", *ret, pin);
 	return true;
 }
 

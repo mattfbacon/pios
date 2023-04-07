@@ -35,7 +35,7 @@ void gpio_set_mode(gpio_pin_t const pin, gpio_mode_t const mode) {
 }
 
 void gpio_write(gpio_pin_t const pin, bool const value) {
-	LOG_DEBUG("writing %B to pin %u", value, pin);
+	LOG_DEBUG("writing %@b to pin %u", value, pin);
 
 	u32 volatile* const reg = &(value ? GPIO_BASE->set : GPIO_BASE->clear)[pin / 32];
 	u32 const bit = pin % 32;
@@ -48,7 +48,7 @@ bool gpio_read(gpio_pin_t const pin) {
 	u32 const reg = GPIO_BASE->read[pin / 32];
 	u32 const bit = pin % 32;
 	bool const set = reg & (1 << bit);
-	LOG_DEBUG("read value %B from pin %u", set, pin);
+	LOG_DEBUG("read value %@b from pin %u", set, pin);
 	return set;
 }
 
