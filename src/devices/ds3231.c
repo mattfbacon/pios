@@ -66,7 +66,7 @@ bool ds3231_get_time(struct time_components* const ret) {
 	ret->year = 100 * century + within_century;
 
 	// The DS3231 does not provide this so we need to synthesize it.
-	ret->day_of_year = time_month_to_day_of_year(ret->month, time_is_leap_year(ret->year + 1900));
+	ret->day_of_year = time_month_to_day_of_year(ret->month, time_is_leap_year(ret->year + 1900)) + ret->day_of_month;
 
 	return true;
 }
