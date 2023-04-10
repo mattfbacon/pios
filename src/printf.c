@@ -583,7 +583,6 @@ isize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 			} break;
 			case format_conversion_literal_percent: {
 				write_wrapper(user, '%');
-				++fmt;
 			} break;
 			case format_conversion_data: {
 				if (specifier.length_modifier != format_length_default) {
