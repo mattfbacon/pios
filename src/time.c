@@ -2,6 +2,7 @@
 // time_unix_to_components is similar to gmtime_r.
 // time_unix_from_components is similar to mktime.
 
+#include "log.h"
 #include "time.h"
 
 enum : i64 {
