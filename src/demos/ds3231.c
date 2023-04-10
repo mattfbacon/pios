@@ -17,20 +17,20 @@ static u64 read_u64(void) {
 	return ret;
 }
 
-void main(void) {
+[[noreturn]] void main(void) {
 	struct time_components components;
 
 	i2c_init(i2c_speed_standard);
 
 	uart_send_str("unix timestamp to set to (0 to skip setting): ");
-	time_t const timestamp = read_u64();
+	time_t const timestamp = (i64)read_u64();
 
 	if (timestamp != 0) {
 		assert(time_unix_to_components(timestamp, &components), "converting timestamp to components");
 
 		uart_printf(
 			"decomposed: %u-%u-%u %u:%u:%u\r\n",
-			(u64)(components.year + 1900),
+			(u64)(components.year),
 			(u64)components.month + 1,
 			(u64)components.day_of_month,
 			(u64)components.hour,
@@ -46,7 +46,7 @@ void main(void) {
 		uart_printf(
 			"%s %u-%u-%u %u:%u:%u\r\n",
 			days_of_week[components.weekday],
-			components.year + 1900,
+			components.year,
 			components.month,
 			components.day_of_month,
 			components.hour,

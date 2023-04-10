@@ -63,16 +63,16 @@ bool ds3231_get_time(struct time_components* const ret) {
 
 	u8 const century = buf[5] >> SHIFT_CENTURY;
 	u8 const within_century = bcd_decode(buf[6]);
-	ret->year = 100 * century + within_century;
+	ret->year = 100 * century + within_century + 1900;
 
 	// The DS3231 does not provide this so we need to synthesize it.
-	ret->day_of_year = time_month_to_day_of_year(ret->month, time_is_leap_year(ret->year + 1900)) + ret->day_of_month;
+	ret->day_of_year = time_month_to_day_of_year(ret->month, time_is_leap_year(ret->year)) + ret->day_of_month;
 
 	return true;
 }
 
 bool ds3231_set_time(struct time_components const* const time) {
-	TRY_MSG(time->year >= 0 && time->year < 200)
+	TRY_MSG(time->year >= DS3231_YEAR_MIN && time->year <= DS3231_YEAR_MAX)
 
 	u8 const buf[8] = {
 		REG_DATETIME,
@@ -82,7 +82,7 @@ bool ds3231_set_time(struct time_components const* const time) {
 		bcd_encode(time->hour),
 		time->weekday + 1,
 		bcd_encode(time->day_of_month),
-		bcd_encode(time->month + 1) | (time->year >= 100 ? (1 << 7) : 0),
+		bcd_encode(time->month + 1) | (time->year >= 2000 ? (1 << 7) : 0),
 		bcd_encode((u8)(time->year % 100)),
 	};
 

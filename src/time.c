@@ -168,7 +168,7 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 		++years;
 	}
 
-	ret->year = years + 100;
+	ret->year = years + 2000;
 	ret->month = (u8)month;
 	ret->day_of_month = (u8)days_within + 1;
 	ret->weekday = (u8)weekday;
@@ -181,7 +181,7 @@ bool time_unix_to_components(time_t const time, struct time_components* const re
 }
 
 time_t time_unix_from_components(struct time_components const* const components) {
-	i64 year = (i64)components->year;
+	i64 year = (i64)components->year - 1900;
 	u8 month = components->month;
 
 	// We need to do this check with the month because it affects leap-year checking.

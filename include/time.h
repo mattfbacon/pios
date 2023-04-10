@@ -3,7 +3,6 @@
 typedef i64 time_t;
 
 struct time_components {
-	// 0 = the year 1900.
 	i32 year;
 	// 0-indexed.
 	u16 day_of_year;
