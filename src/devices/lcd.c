@@ -142,7 +142,7 @@ static void wait_until_not_busy(void) {
 	write(PIN_REG_SELECT, false);
 	write(PIN_READ_WRITE, true);
 	set_mode(PIN_BUSY, mcp23017_mode_input);
-	// Don't wait more than about 100 ms.
+	// Don't wait more than about 1 s.
 	for (u32 i = 0; i < 100; ++i) {
 		write(PIN_ENABLE, true);
 		sleep_micros(1);
