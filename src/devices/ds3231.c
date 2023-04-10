@@ -1,3 +1,7 @@
+// # Resources
+//
+// - <https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf>
+
 #include "devices/ds3231.h"
 #include "i2c.h"
 #include "sleep.h"
