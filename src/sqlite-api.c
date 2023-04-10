@@ -10,8 +10,11 @@
 #include "time.h"
 #include "try.h"
 
-enum {
+enum : usize {
 	MAX_PATHNAME = 16,
+};
+
+enum : u32 {
 	// This is totally random.
 	FILE_INFO_SIGNATURE = 0xfd61'ba58,
 };
@@ -41,12 +44,12 @@ static bool write_file_info(struct file_info const* const info) {
 	on_disk->signature = FILE_INFO_SIGNATURE;
 	on_disk->version = 0;
 	on_disk->size = info->size;
-	TRY_MSG(emmc_write(shared_buffer, sqlite_database_partition.first, 1))
+	TRY_MSG(emmc_write(shared_buffer, (u32)sqlite_database_partition.first, 1))
 	return true;
 }
 
 static bool read_file_info(struct file_info* const ret) {
-	TRY_MSG(emmc_read(shared_buffer, sqlite_database_partition.first, 1))
+	TRY_MSG(emmc_read(shared_buffer, (u32)sqlite_database_partition.first, 1))
 	struct file_info_on_disk* const info = (struct file_info_on_disk*)&shared_buffer;
 
 	if (info->signature != FILE_INFO_SIGNATURE) {
@@ -98,8 +101,8 @@ static bool convert_length_and_offset(i64 const offset_, i64 const length_, stru
 	u64 const length = (u64)length_;
 	u64 const offset = (u64)offset_;
 
-	u64 const partition_data_start = sqlite_database_partition.first + 1;
-	u32 const first_full_block = (offset + EMMC_BLOCK_SIZE - 1) / EMMC_BLOCK_SIZE + partition_data_start;
+	u32 const partition_data_start = (u32)(sqlite_database_partition.first + 1);
+	u32 const first_full_block = (u32)((offset + EMMC_BLOCK_SIZE - 1) / EMMC_BLOCK_SIZE) + partition_data_start;
 	if (first_full_block < partition_data_start) {
 		LOG_ERROR("offset %u overflowed", offset);
 		return false;
@@ -112,7 +115,7 @@ static bool convert_length_and_offset(i64 const offset_, i64 const length_, stru
 
 	u64 const length_without_start = length - partial_start_bytes;
 
-	u32 const num_full_blocks = length_without_start / EMMC_BLOCK_SIZE;
+	u32 const num_full_blocks = (u32)(length_without_start / EMMC_BLOCK_SIZE);
 	u32 const partial_end_bytes = length_without_start % EMMC_BLOCK_SIZE;
 	u32 const last_block = first_full_block + num_full_blocks + (partial_end_bytes > 0 ? 1 : 0) - 1;
 
@@ -260,8 +263,8 @@ static int main_db_truncate(sqlite3_file* const file_, sqlite3_int64 const new_s
 	u64 const old_size = file->info.size;
 	if (new_size > old_size) {
 		// Since we zero out the rest of the contents during partial writes, we only need to worry about full blocks here.
-		u32 const old_num_blocks = (old_size + EMMC_BLOCK_SIZE - 1) / EMMC_BLOCK_SIZE;
-		u32 const new_num_blocks = (new_size + EMMC_BLOCK_SIZE - 1) / EMMC_BLOCK_SIZE;
+		u32 const old_num_blocks = (u32)((old_size + EMMC_BLOCK_SIZE - 1) / EMMC_BLOCK_SIZE);
+		u32 const new_num_blocks = (u32)((new_size + EMMC_BLOCK_SIZE - 1) / EMMC_BLOCK_SIZE);
 		if (!emmc_write(NULL, old_num_blocks, new_num_blocks - old_num_blocks)) {
 			return SQLITE_IOERR_TRUNCATE;
 		}
@@ -409,7 +412,7 @@ static void* vfs_dlopen(sqlite3_vfs*, char const*) {
 
 static int vfs_randomness(sqlite3_vfs*, int const length, char* const buffer) {
 	LOG_DEBUG("vfs_randomness");
-	u32 rand_val, rand_bytes_left = 0;
+	u32 rand_val = 0, rand_bytes_left = 0;
 	for (int i = 0; i < length; ++i) {
 		if (rand_bytes_left == 0) {
 			rand_val = random();
@@ -424,7 +427,7 @@ static int vfs_randomness(sqlite3_vfs*, int const length, char* const buffer) {
 
 static int vfs_sleep(sqlite3_vfs*, int const micros) {
 	LOG_DEBUG("vfs_sleep(%d)", (i64)micros);
-	sleep_micros(micros);
+	sleep_micros((u64)micros);
 	return SQLITE_OK;
 }
 
