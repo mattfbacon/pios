@@ -73,9 +73,9 @@ u16 time_month_to_day_of_year(u8 const month, bool const is_leap_year) {
 	// Prefix sums of days based on month.
 	// Each entry is for the 1st of that month.
 	// February has 28 days, i.e., it is not a leap year.
-	static const u16 lut[MONTHS_PER_YEAR] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+	static const u16 LUT[MONTHS_PER_YEAR] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
-	u16 days = lut[month];
+	u16 days = LUT[month];
 
 	// Add the 29th day to February if necessary (month 1 is February since we are zero-indexed).
 	if (is_leap_year && month > 1) {
@@ -83,6 +83,14 @@ u16 time_month_to_day_of_year(u8 const month, bool const is_leap_year) {
 	}
 
 	return days;
+}
+
+u8 time_days_in_month(u8 const month, bool const is_leap_year) {
+	// Similar to the LUT before but not prefix sums.
+	static const u8 LUT[MONTHS_PER_YEAR] = { 0, 31, 28, 31, 30, 31, 31, 30, 31, 30 };
+
+	// Add the 29th day to February if necessary (month 1 is February since we are zero-indexed).
+	return LUT[month] + (month == 1 && is_leap_year);
 }
 
 static time_t month_to_secs(u8 const month, bool const is_leap) {
@@ -190,4 +198,35 @@ time_t time_unix_from_components(struct time_components const* const components)
 	ret += components->second;
 
 	return ret;
+}
+
+static char const* const MONTH_NAMES[12] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+};
+
+char const* time_month_to_string_short(u8 const month) {
+	if (month >= sizeof(MONTH_NAMES) / sizeof(MONTH_NAMES[0])) {
+		LOG_WARN("month %hhu out of bounds", month);
+		return "???";
+	} else {
+		return MONTH_NAMES[month];
+	}
+}
+
+// `year` should be absolute.
+// `month` should be 0-indexed.
+// `day_of_month` should be 1-indexed.
+// The returned day-of-week is 0-indexed and starts at Sunday.
+static u8 ymd_to_dow(i32 year, u8 month, u8 day_of_month) {
+	static i32 LOOKUP[MONTHS_PER_YEAR] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
+	year -= month < 3;
+	i32 ret = (year + year / 4 - year / 100 + year / 400 + LOOKUP[month] + (i32)day_of_month) % DAYS_PER_WEEK;
+	if (ret < 0) {
+		ret += DAYS_PER_WEEK;
+	}
+	return (u8)ret;
+}
+
+void time_fixup_weekday(struct time_components* const this) {
+	this->weekday = ymd_to_dow(this->year + 1900, this->month + 1, this->day_of_month);
 }

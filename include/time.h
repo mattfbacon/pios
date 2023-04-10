@@ -32,5 +32,10 @@ struct time_components {
 bool time_unix_to_components(time_t time, struct time_components* ret);
 time_t time_unix_from_components(struct time_components const* components);
 
+// Returns a static string.
+char const* time_month_to_string_short(u8 month);
+
 u16 time_month_to_day_of_year(u8 month, bool is_leap_year);
+u8 time_days_in_month(u8 month, bool is_leap_year);
 bool time_is_leap_year(i32 year);
+void time_fixup_weekday(struct time_components* components);
