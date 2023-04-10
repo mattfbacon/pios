@@ -9,7 +9,7 @@ static void print_sensor_data(struct aht20_data const data) {
 	LOG_INFO("the temperature is about %u °C and the humidity is about %u%%", (u32)data.temperature, (u32)data.humidity);
 }
 
-void main(void) {
+[[noreturn]] void main(void) {
 	LOG_INFO("initializing i2c");
 	i2c_init(i2c_speed_standard);
 

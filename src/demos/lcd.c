@@ -77,7 +77,7 @@ static void set_mode(mode_t const mode) {
 	lcd_print_line(text);
 }
 
-void main(void) {
+[[noreturn]] void main(void) {
 	i2c_init(i2c_speed_standard);
 
 	lcd_init();

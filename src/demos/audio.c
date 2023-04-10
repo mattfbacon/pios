@@ -15,7 +15,7 @@ static u32 g(u32 const i, u32 const x, u32 const t, u32 const o) {
 	return ((3 & x & (i * ((3 & i >> 16 ? "BY}6YB6$" : "Qj}6jQ6%")[t % 8] + 51) >> o)) << 4);
 }
 
-void main(void) {
+[[noreturn]] void main(void) {
 	gpio_set_pull(PIN_AUDIO1, gpio_pull_floating);
 	gpio_set_mode(PIN_AUDIO1, gpio_mode_alt0);
 	gpio_set_pull(PIN_AUDIO2, gpio_pull_floating);
@@ -36,7 +36,7 @@ void main(void) {
 	for (u32 i = 0;; ++i) {
 		u32 const n = i >> 14;
 		u32 const s = i >> 17;
-		u8 const this_data = g(i, 1, n, 12) + g(i, s, n ^ i >> 13, 10) + g(i, s / 3, n + ((i >> 11) % 3), 10) + g(i, s / 5, 8 + n - ((i >> 10) % 3), 9);
+		u8 const this_data = (u8)(g(i, 1, n, 12) + g(i, s, n ^ i >> 13, 10) + g(i, s / 3, n + ((i >> 11) % 3), 10) + g(i, s / 5, 8 + n - ((i >> 10) % 3), 9));
 
 		// The audio jack has two channels so we write the data twice.
 		pwm_fifo_write(CONTROLLER, this_data);
