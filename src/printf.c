@@ -556,6 +556,9 @@ isize vdprintf(printf_write_callback_t const write_, void* const user_, char con
 				}
 
 				char const* str = __builtin_va_arg(args, char const*);
+				if (str == NULL) {
+					str = "(null)";
+				}
 				write_str_with_padding(write_wrapper, user, str, specifier.padding, specifier.width, specifier.precision == U32_MAX ? USIZE_MAX : specifier.precision);
 			} break;
 			case format_conversion_n: {
