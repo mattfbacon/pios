@@ -9,6 +9,11 @@
 
 #pragma once
 
+enum : u8 {
+	LCD_LINES = 2,
+	LCD_COLUMNS = 16,
+};
+
 typedef enum lcd_direction : u8 {
 	lcd_direction_left = 0,
 	lcd_direction_right = 1,
