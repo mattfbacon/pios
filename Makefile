@@ -34,7 +34,8 @@ KERNEL_SOURCES := \
 
 ARMSTUB_SOURCES := armstub.s
 
-CFLAGS := -Wall -Wextra -Weverything -Wno-pre-c2x-compat -Wno-declaration-after-statement -Wno-gnu-empty-struct -Wno-c++-compat -Wno-gnu -Wno-c++98-compat -Wno-reserved-identifier -Wno-fixed-enum-extension -Wno-switch-enum -Wno-pedantic -O2 -g -std=gnu2x -ffreestanding -nostdinc -mcpu=cortex-a72 -iquote$(INCLUDE_DIR) -MMD -MP -include$(INCLUDE_DIR)/common.h
+CFLAGS_SHARED := -O2 -std=gnu2x -ffreestanding -nostdinc -mcpu=cortex-a72
+CFLAGS := $(CFLAGS_SHARED) -iquote$(INCLUDE_DIR) -isystemsqlite -MMD -MP -include$(INCLUDE_DIR)/common.h -Wall -Wextra -Weverything -Wno-pre-c2x-compat -Wno-declaration-after-statement -Wno-gnu-empty-struct -Wno-c++-compat -Wno-gnu -Wno-c++98-compat -Wno-reserved-identifier -Wno-fixed-enum-extension -Wno-switch-enum -Wno-pedantic -g
 
 CC := clang --target=aarch64-unknown-none
 OBJCOPY := llvm-objcopy
