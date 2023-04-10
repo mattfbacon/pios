@@ -9,7 +9,7 @@
 
 #pragma once
 
-typedef enum lcd_direction {
+typedef enum lcd_direction : u8 {
 	lcd_direction_left = 0,
 	lcd_direction_right = 1,
 } lcd_direction_t;
@@ -21,7 +21,7 @@ typedef struct lcd_position {
 	u8 column;
 } lcd_position_t;
 
-typedef enum lcd_buttons {
+typedef enum __attribute__((flag_enum)) lcd_buttons : u8 {
 	lcd_button_select = 1 << 0,
 	lcd_button_right = 1 << 1,
 	lcd_button_down = 1 << 2,

@@ -2,10 +2,12 @@
 #include "pwm.h"
 #include "sleep.h"
 
-enum {
+enum : gpio_pin_t {
 	PIN_AUDIO1 = 40,
 	PIN_AUDIO2 = 41,
+};
 
+enum : u8 {
 	CONTROLLER = 1,
 };
 

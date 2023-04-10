@@ -1,7 +1,7 @@
 #pragma once
 
 // If a given bit is set, that exception is masked, meaning it will not be delivered.
-typedef enum exception_mask {
+typedef enum __attribute__((enum_extensibility(closed), flag_enum)) exception_mask : u32 {
 	exception_mask_fiq = 1 << 6,
 	exception_mask_irq = 1 << 7,
 	exception_mask_error = 1 << 8,

@@ -1,7 +1,7 @@
 #pragma once
 
 // All in hertz.
-enum {
+enum : u32 {
 	i2c_speed_slow = 10'000,
 	i2c_speed_standard = 100'000,
 	i2c_speed_fast = 400'000,

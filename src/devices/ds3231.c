@@ -3,9 +3,11 @@
 #include "sleep.h"
 #include "try.h"
 
-enum {
+enum : i2c_address_t {
 	ADDRESS = 0x68,
+};
 
+enum : u8 {
 	REG_DATETIME = 0,
 
 	FLAG_PM = 1 << 5,

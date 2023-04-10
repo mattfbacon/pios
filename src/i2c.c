@@ -14,7 +14,7 @@ static struct {
 	u32 clock_stretch;
 } volatile* const BASE = (void volatile*)(PERIPHERAL_BASE + 0x804000);
 
-enum {
+enum : u32 {
 	CONTROL_READ = 1 << 0,
 	CONTROL_CLEAR_FIFO = 1 << 4,
 	CONTROL_START_TRANSFER = 1 << 7,

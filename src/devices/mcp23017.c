@@ -15,7 +15,7 @@
 #include "try.h"
 #include "uart.h"
 
-enum {
+enum : u8 {
 	REG_PIN_MODE = 0x00,
 	REG_POLARITY = 0x02,
 	REG_PULL_UP = 0x0c,

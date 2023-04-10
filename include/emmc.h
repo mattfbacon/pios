@@ -1,6 +1,6 @@
 #pragma once
 
-enum {
+enum : u32 {
 	EMMC_BLOCK_SIZE = 512,
 };
 

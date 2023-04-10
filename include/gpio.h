@@ -2,7 +2,7 @@
 
 typedef u8 gpio_pin_t;
 
-typedef enum gpio_mode {
+typedef enum gpio_mode : u32 {
 	gpio_mode_input = 0,
 	gpio_mode_output = 1,
 	gpio_mode_alt0 = 4,
@@ -13,7 +13,7 @@ typedef enum gpio_mode {
 	gpio_mode_alt5 = 2,
 } gpio_mode_t;
 
-typedef enum gpio_pull {
+typedef enum gpio_pull : u32 {
 	gpio_pull_floating = 0,
 	gpio_pull_up = 1,
 	gpio_pull_down = 2,

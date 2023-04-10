@@ -11,18 +11,18 @@ typedef struct mcp23017_device {
 	i2c_address_t address;
 } mcp23017_device_t;
 
-typedef enum mcp23017_mode {
+typedef enum mcp23017_mode : u8 {
 	mcp23017_mode_input = 1,
 	mcp23017_mode_output = 0,
 } mcp23017_mode_t;
 
 // the MCP23017 only supports pull-up.
-typedef enum mcp23017_pull {
+typedef enum mcp23017_pull : u8 {
 	mcp23017_pull_floating = 0,
 	mcp23017_pull_up = 1,
 } mcp23017_pull_t;
 
-enum {
+enum : i2c_address_t {
 	MCP23017_ADDRESS = 0x20,
 };
 

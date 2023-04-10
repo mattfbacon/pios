@@ -3,7 +3,7 @@
 
 #pragma once
 
-typedef enum pwm_channel_init_flags {
+typedef enum __attribute__((flag_enum)) pwm_channel_init_flags : u32 {
 	pwm_channel_enabled = 1 << 0,
 	// Unset uses the PWM mode.
 	pwm_channel_mode_serializer = 1 << 1,

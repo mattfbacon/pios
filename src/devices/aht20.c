@@ -11,9 +11,11 @@
 #include "try.h"
 #include "uart.h"
 
-enum {
+enum : i2c_address_t {
 	SENSOR_ADDRESS = 0x38,
+};
 
+enum : u8 {
 	COMMAND_GET_STATUS = 0x71,
 	COMMAND_CALIBRATE = 0xe1,
 	COMMAND_MEASURE = 0xac,

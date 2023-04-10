@@ -14,9 +14,7 @@ enum : u64 {
 
 enum : u32 {
 	GPT_REVISION = 0x0001'0000u,
-};
 
-enum {
 	GPT_HEADER_SIZE = 92,
 	GPT_HEADER_LBA = 1,
 };

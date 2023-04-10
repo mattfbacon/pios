@@ -39,7 +39,7 @@
 void __attribute__((noreturn)) exception_handle_invalid(u64 index);
 void exception_handle_el1_irq(void);
 
-enum {
+enum : u64 {
 	IRQ0_TIMER0 = 1 << 0,
 	IRQ0_TIMER1 = 1 << 1,
 	IRQ0_TIMER2 = 1 << 2,

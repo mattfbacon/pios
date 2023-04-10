@@ -3,7 +3,7 @@
 
 #pragma once
 
-typedef enum mailbox_channel {
+typedef enum mailbox_channel : u8 {
 	mailbox_channel_power = 0,
 	mailbox_channel_framebuffer = 1,
 	mailbox_channel_virtual_uart = 2,
@@ -15,7 +15,7 @@ typedef enum mailbox_channel {
 	mailbox_channel_tags = 8,
 } mailbox_channel_t;
 
-typedef enum mailbox_clock {
+typedef enum mailbox_clock : u32 {
 	mailbox_clock_emmc = 1,
 	mailbox_clock_uart = 2,
 	mailbox_clock_pwm = 10,
@@ -23,7 +23,7 @@ typedef enum mailbox_clock {
 
 extern u32 volatile __attribute__((aligned(16))) mailbox[64];
 
-enum {
+enum : u32 {
 	MAILBOX_REQUEST = 0,
 
 	MAILBOX_TAG_GET_ARM_MEMORY = 0x1'0005,

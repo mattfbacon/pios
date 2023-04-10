@@ -13,7 +13,7 @@
 #include "printf.h"
 #include "sleep.h"
 
-enum {
+enum : mcp23017_pin_t {
 	PIN_BACKLIGHT_RED = 6,
 	PIN_BACKLIGHT_GREEN = 7,
 	PIN_BACKLIGHT_BLUE = 8,
@@ -52,7 +52,7 @@ static mcp23017_pin_t const INPUTS[] = {
 	PIN_BUTTON_SELECT, PIN_BUTTON_RIGHT, PIN_BUTTON_DOWN, PIN_BUTTON_UP, PIN_BUTTON_LEFT,
 };
 
-enum {
+enum : u8 {
 	COMMAND_CLEAR = 0x01,
 
 	COMMAND_GO_HOME = 0x02,
@@ -78,7 +78,9 @@ enum {
 	COMMAND_SET_CGRAM_ADDRESS = 0x40,
 
 	COMMAND_SET_DDRAM_ADDRESS = 0x80,
+};
 
+enum : u16 {
 	BUTTON_MASK = 0b11111,
 	BACKLIGHT_MASK = (1 << PIN_BACKLIGHT_RED) | (1 << PIN_BACKLIGHT_GREEN) | (1 << PIN_BACKLIGHT_BLUE),
 };

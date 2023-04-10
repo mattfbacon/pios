@@ -147,7 +147,7 @@ enum : u32 {
 #define MAKE_EMMC_COMMAND(_response_type, _crc_enable, _index) \
 	(((_response_type) << CMD_SHIFT_RESPONSE_TYPE) | ((_crc_enable) << CMD_SHIFT_CRC) | ((_index) << CMD_SHIFT_INDEX))
 
-enum emmc_command {
+enum emmc_command : u32 {
 	command_go_idle = 0,
 	command_send_card_id = MAKE_EMMC_COMMAND(RESPONSE_136, 1, 2),
 	command_send_relative_address = MAKE_EMMC_COMMAND(RESPONSE_48, 1, 3),

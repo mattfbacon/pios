@@ -53,13 +53,13 @@ isize dprintf(printf_write_callback_t const write, void* user, char const* fmt, 
 	return ret;
 }
 
-enum format_padding {
+enum format_padding : u8 {
 	format_padding_left_justified,
 	format_padding_right_justified,
 	format_padding_zero_padded,
 };
 
-enum format_sign {
+enum format_sign : u8 {
 	format_sign_default,
 	format_sign_blank,
 	format_sign_always,
@@ -67,7 +67,7 @@ enum format_sign {
 
 _Static_assert(sizeof(long) == sizeof(long long));
 
-enum format_length {
+enum format_length : u8 {
 	format_length_hh,
 	format_length_h,
 	format_length_default,
@@ -75,7 +75,7 @@ enum format_length {
 	format_length_l,
 };
 
-enum format_conversion {
+enum format_conversion : u8 {
 	// Standard:
 	// Or i.
 	format_conversion_d,

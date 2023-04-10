@@ -6,7 +6,7 @@
 #include "random.h"
 #include "sleep.h"
 
-enum {
+enum : u32 {
 	CONTROL_DIVIDER_SHIFT = 13,
 	CONTROL_DIVIDER = 3 << CONTROL_DIVIDER_SHIFT,
 	CONTROL_GENERATE_MASK = (1 << 13) - 1,

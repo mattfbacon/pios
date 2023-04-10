@@ -3,7 +3,7 @@
 #include "sleep.h"
 #include "timer.h"
 
-enum {
+enum : u8 {
 	SLEEP_TIMER = 1,
 };
 

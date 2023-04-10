@@ -3,7 +3,7 @@
 #include "pwm.h"
 #include "sleep.h"
 
-enum {
+enum : u8 {
 	CONTROLLER = 0,
 	CHANNEL = 1,
 };

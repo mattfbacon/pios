@@ -37,7 +37,7 @@ static struct {
 
 static bool initialized = false;
 
-enum {
+enum : u32 {
 	// This cannot necessarily just be set to any value.
 	// There is a certain minimum for the hardware clock rate somewhere between 460800 and 921600.
 	// Below that point, you must use the UART's dividers to further lower the clock rate.
