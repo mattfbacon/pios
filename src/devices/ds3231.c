@@ -65,7 +65,7 @@ bool ds3231_get_time(struct time_components* const ret) {
 
 	ret->day_of_month = bcd_decode(buf[4]);
 
-	ret->month = bcd_decode(buf[5] & MASK_MONTH);
+	ret->month = bcd_decode(buf[5] & MASK_MONTH) + 1;
 
 	u8 const century = buf[5] >> SHIFT_CENTURY;
 	u8 const within_century = bcd_decode(buf[6]);
