@@ -339,7 +339,7 @@ void lcd_printf(char const* fmt, ...) {
 }
 
 struct buf_writer {
-	char line[40];
+	char line[16];
 	usize idx;
 };
 
@@ -353,7 +353,7 @@ static void write_buf(void* const user, char const ch) {
 }
 
 void lcd_vprintf(char const* fmt, __builtin_va_list args) {
-	struct buf_writer buf = {};
+	struct buf_writer buf = { .idx = 0 };
 
 	vdprintf(write_buf, (void*)&buf, fmt, args);
 
