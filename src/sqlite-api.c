@@ -170,7 +170,7 @@ static int main_db_read(sqlite3_file* const file_, void* const buffer_, int cons
 	}
 
 	if (divided.end_byte > file->info.size) {
-		LOG_WARN("trying to read beyond end of file");
+		LOG_WARN("trying to read beyond end of file: file size is %llu but end byte is %llu", file->info.size, divided.end_byte);
 		memset(buffer, 0, divided.length);
 		return SQLITE_IOERR_SHORT_READ;
 	}
