@@ -31,7 +31,7 @@ enum : usize {
 
 enum : u32 {
 	// This is totally random.
-	FILE_INFO_SIGNATURE = 0xfd61'ba58,
+	FILE_INFO_SIGNATURE = 0xfd51'ba38,
 };
 
 struct lba_range sqlite_database_partition;
