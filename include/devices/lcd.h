@@ -88,5 +88,10 @@ void lcd_print_str(char const* str);
 // Prints spaces up to 16 characters to ensure that the rest of the line is empty.
 // Does not go to the next line automatically.
 void lcd_print_line(char const* str);
+
 void lcd_printf(char const* fmt, ...);
 void lcd_vprintf(char const* fmt, __builtin_va_list args);
+
+// Prints to the whole screen, starting on the first line and advancing to the second line if a newline is written.
+void lcd_printf_all(char const* fmt, ...);
+void lcd_vprintf_all(char const* fmt, __builtin_va_list args);

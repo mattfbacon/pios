@@ -364,3 +364,51 @@ void lcd_vprintf(char const* fmt, __builtin_va_list args) {
 		send_data(' ');
 	}
 }
+
+void lcd_printf_all(char const* fmt, ...) {
+	__builtin_va_list args;
+	__builtin_va_start(args, fmt);
+	lcd_vprintf_all(fmt, args);
+	__builtin_va_end(args);
+}
+
+struct buf_writer_all {
+	char lines[LCD_LINES][LCD_COLUMNS];
+	u8 line, idx;
+};
+
+static void write_buf_all(void* const user, char const ch) {
+	struct buf_writer_all* const buf = user;
+
+	if (buf->line >= LCD_LINES) {
+		return;
+	}
+
+	if (ch == '\n') {
+		++buf->line;
+		buf->idx = 0;
+	} else {
+		if (buf->idx < LCD_COLUMNS) {
+			buf->lines[buf->line][buf->idx] = ch;
+			++buf->idx;
+		}
+	}
+}
+
+void lcd_vprintf_all(char const* fmt, __builtin_va_list args) {
+	struct buf_writer_all buf = {};
+	for (u8 line = 0; line < LCD_LINES; ++line) {
+		for (u8 idx = 0; idx < LCD_COLUMNS; ++idx) {
+			buf.lines[line][idx] = ' ';
+		}
+	}
+
+	vdprintf(write_buf_all, (void*)&buf, fmt, args);
+
+	for (u8 line = 0; line < LCD_LINES; ++line) {
+		lcd_set_position(line, 0);
+		for (u8 idx = 0; idx < LCD_COLUMNS; ++idx) {
+			send_data(buf.lines[line][idx]);
+		}
+	}
+}
