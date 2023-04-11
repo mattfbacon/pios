@@ -1,3 +1,18 @@
+// # References
+//
+// (These references are for anything related to embedding SQLite.)
+//
+// - <https://www.sqlite.org/c3ref/vfs.html>
+// - <https://www.sqlite.org/c3ref/initialize.html>
+// - <https://www.sqlite.org/malloc.html>
+// - <https://www.sqlite.org/c3ref/io_methods.html>
+// - <https://www.sqlite.org/lockingv3.html#how_to_corrupt>
+// - <https://www.sqlite.org/custombuild.html>
+//
+// # Notes
+//
+// Don't forget to execute `pragma journal_mode=memory` before interacting with the database. Otherwise there will be an error.
+
 #include <sqlite3.h>
 #include <time.h>
 
