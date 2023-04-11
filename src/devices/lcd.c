@@ -276,8 +276,8 @@ void lcd_shift_display(lcd_direction_t const direction) {
 void lcd_set_position(u8 const line, u8 const column) {
 	LOG_DEBUG("setting position to line %u column %u", line, column);
 
-	if (line >= 2 || column >= 40) {
-		LOG_WARN("line or column out of range");
+	if (line >= LCD_LINES || column >= LCD_LINE_STRIDE) {
+		LOG_WARN("line %hhu or column %hhu out of range", line, column);
 		return;
 	}
 	u8 const position = line * 0x40 | column;
@@ -323,10 +323,10 @@ void lcd_print_str(char const* str) {
 
 void lcd_print_line(char const* str) {
 	u32 i = 0;
-	for (; i < 16 && *str; ++str, ++i) {
+	for (; i < LCD_COLUMNS && *str; ++str, ++i) {
 		lcd_print(*str);
 	}
-	for (; i < 16; ++i) {
+	for (; i < LCD_COLUMNS; ++i) {
 		lcd_print(' ');
 	}
 }
@@ -339,7 +339,7 @@ void lcd_printf(char const* fmt, ...) {
 }
 
 struct buf_writer {
-	char line[16];
+	char line[LCD_COLUMNS];
 	usize idx;
 };
 
@@ -360,7 +360,7 @@ void lcd_vprintf(char const* fmt, __builtin_va_list args) {
 	for (usize i = 0; i < buf.idx; ++i) {
 		send_data(buf.line[i]);
 	}
-	for (usize i = buf.idx; i < 16; ++i) {
+	for (usize i = buf.idx; i < LCD_COLUMNS; ++i) {
 		send_data(' ');
 	}
 }

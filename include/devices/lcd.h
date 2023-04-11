@@ -15,6 +15,9 @@
 enum : u8 {
 	LCD_LINES = 2,
 	LCD_COLUMNS = 16,
+	// Though only 16 characters are visible at a time, each line actually has 40 characters available.
+	// This can be used to shift messages across the screen in combination with `lcd_shift_display`.
+	LCD_LINE_STRIDE = 40,
 };
 
 typedef enum lcd_direction : u8 {
