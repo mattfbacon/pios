@@ -402,9 +402,11 @@ static int vfs_delete(sqlite3_vfs*, char const* filename, int) {
 	return SQLITE_OK;
 }
 
-static int vfs_access(sqlite3_vfs*, char const* name, int, int* const ret) {
-	LOG_DEBUG("vfs_access(%s)", name);
+static int vfs_access(sqlite3_vfs*, char const* name, int const flags, int* const ret) {
+	LOG_DEBUG("vfs_access(%s, %d)", name, flags);
+
 	*ret = strcmp(name, "maindb") == 0;
+
 	return SQLITE_OK;
 }
 
