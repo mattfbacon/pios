@@ -6,6 +6,9 @@
 // # References
 //
 // - <https://www.sparkfun.com/datasheets/LCD/HD44780.pdf>
+// - <https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library>
+// - <https://github.com/adafruit/Adafruit_CircuitPython_CharLCD>
+// - <https://learn.adafruit.com/rgb-lcd-shield>
 
 #pragma once
 
