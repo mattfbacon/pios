@@ -385,13 +385,6 @@ void main(void) {
 	int ret;
 
 	i2c_init(i2c_speed_standard);
-	sleep_micros(100'000);
-
-	assert(aht20_init(), "initializing AHT20");
-
-	lcd_init();
-	lcd_load_character(DEGREE_CHARACTER, DEGREE_DATA);
-	lcd_clear();
 
 #ifndef STUB_SQLITE
 	assert(emmc_init(), "initializing EMMC");
@@ -419,6 +412,12 @@ void main(void) {
 	ret = sqlite3_prepare_v2(database, "insert into data values (?1, ?2, ?3)", -1, &statements.insert, NULL);
 	assert(ret == SQLITE_OK, "sqlite prepare (insert) failed with code %d", ret);
 #endif
+
+	assert(aht20_init(), "initializing AHT20");
+
+	lcd_init();
+	lcd_load_character(DEGREE_CHARACTER, DEGREE_DATA);
+	lcd_clear();
 
 	struct aht20_data sensor_data;
 	bool sensor_error = false;
