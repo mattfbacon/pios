@@ -217,18 +217,12 @@ static bool switch_clock_rate(u32 const base_clock, u32 const target_rate) {
 	c1 &= ~CTRL1_CLOCK_ENABLE;
 	EMMC->control[1] = c1;
 
-	sleep_micros(3'000);
-
 	c1 &= ~CTRL1_CLOCK_DIVIDER_MASK;
 	c1 |= divider;
 	EMMC->control[1] = c1;
 
-	sleep_micros(3'000);
-
 	c1 |= CTRL1_CLOCK_ENABLE;
 	EMMC->control[1] = c1;
-
-	sleep_micros(3'000);
 
 	LOG_TRACE("switched clock rate to %u", target_rate);
 
@@ -256,11 +250,7 @@ static bool emmc_setup_clock(void) {
 
 	TRY_MSG(wait_reg_mask(&EMMC->control[1], CTRL1_CLOCK_STABLE, true, TIMEOUT_DEFAULT))
 
-	sleep_micros(30'000);
-
 	EMMC->control[1] |= CTRL1_CLOCK_ENABLE;
-
-	sleep_micros(30'000);
 
 	LOG_DEBUG("clock is set up");
 
@@ -330,8 +320,6 @@ static bool emmc_command(emmc_marshaled_command_t const command, u32 const arg, 
 	EMMC->command = command;
 
 	LOG_TRACE("waiting for \"command done\" interrupt flag");
-
-	sleep_micros(10'000);
 
 	TRY_MSG(wait_reg_mask(&EMMC->interrupt_flags, INTERRUPT_DATA_ERROR | INTERRUPT_COMMAND_DONE, true, timeout))
 
@@ -516,15 +504,12 @@ static bool emmc_card_reset(void) {
 	TRY_MSG(wait_reg_mask(&EMMC->control[1], CTRL1_RESET_ALL, false, TIMEOUT_DEFAULT))
 
 	enable_bus_power();
-	sleep_micros(3'000);
 
 	TRY_MSG(emmc_setup_clock())
 
 	EMMC->interrupt_enable = 0;
 	EMMC->interrupt_flags = 0xffffffff;
 	EMMC->interrupt_mask = 0xffffffff;
-
-	sleep_micros(203'000);
 
 	device.transfer_blocks = 0;
 
@@ -539,8 +524,6 @@ static bool emmc_card_reset(void) {
 	TRY_MSG(check_sdhc_support(v2_card))
 
 	switch_clock_rate(device.base_clock, SD_CLOCK_NORMAL);
-
-	sleep_micros(10'000);
 
 	TRY_MSG(check_rca())
 
