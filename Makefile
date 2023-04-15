@@ -99,3 +99,9 @@ $(SD_DIR)/armstub.img: $(BUILD_DIR)/armstub.img
 
 .PHONY: install
 install: $(SD_DIR)/kernel8.img $(SD_DIR)/config.txt $(SD_DIR)/armstub.img
+
+.PHONY: report
+report: doc/report.pdf
+
+doc/report.pdf: doc/report.typ
+	typst compile $< $@
