@@ -64,7 +64,7 @@ In my mind I divide the development process into a few main stages, as follow:
 
 Initially I simply wanted a "sign of life" so I made it just turn the on-board ACT LED (GPIO pin 42) on. At this point the code was a single C file and I was building it manually. This worked and I was thrilled!
 
-The next step was to implement "sleeping", which I did by spinning for a certain number of relatively slow instructions (`asm volatile ("isb")`; this approach still remains in the codebase as `sleep_cycles`). With this I could blink the LED instead of just turning it on.
+The next step was to implement "sleeping", which I did by spinning for a certain number of relatively slow instructions (`isb`; this approach still remains in the codebase as `sleep_cycles`). With this I could blink the LED instead of just turning it on.
 
 Marking the start of my general approach to this project, I extracted the GPIO interfacing code into a module and refactored the code to use that.
 
