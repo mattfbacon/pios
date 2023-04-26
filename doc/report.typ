@@ -171,4 +171,4 @@ Considering the modular nature of the unikernel, the same platform could be used
 - A "bootloader" of sorts that receives programs over the UART and executes them, to avoid having to constantly remove and replace the SD card.
 - A sequencer/music maker program using the LCD.
 - A thermostat using the real-time clock and the temperature/humidity sensor that could be infinitely programmable with rich and complex logic, and which could further present an interface on the LCD to customize behavior at runtime.
-- Extending the weather station with a UI shown on an HDMI monitor that can display various information and possibly be interactive using buttons or even Bluetooth keyboards/mice (#link("https://www.rpi4os.com") has a part for this--it used a Bluetooth keyboard and the HDMI display to make Breakout)
+- Extending the weather station with a UI shown on an HDMI monitor that can display various information and possibly be interactive using buttons or even Bluetooth keyboards/mice (#link("https://www.rpi4os.com") has a part for this---it used a Bluetooth keyboard and the HDMI display to make Breakout)
