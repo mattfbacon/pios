@@ -148,9 +148,13 @@ In the default mode, the LCD will alternate between the time and the sensor data
 
 When interacting with menus, Left will exit/cancel/go back, Right and Select will submit/continue, and Up and Down will modify/scroll. All of the menus follow this scheme.
 
-=== Demonstration Video
+=== Video and Images
 
 Reference this video for a more in-depth usage guide and demonstration: #link("https://inv.riverside.rocks/watch?v=YGMFd1Fx_ZE")
+
+#image("img1.jpg")
+
+#image("img2.jpg")
 
 == Remarks
 
