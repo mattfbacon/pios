@@ -176,16 +176,18 @@ struct time_editor {
 			case focused_day: {
 				u8 const days_in_month = time_days_in_month(time->month, time_is_leap_year(time->year));
 				time->day_of_month += offset;
-				if (time->month > days_in_month + 1) {
-					time->month = 1;
-				} else if (time->month == 0) {
-					time->month = days_in_month;
+				if (time->day_of_month > days_in_month + 1) {
+					time->day_of_month = 1;
+				} else if (time->day_of_month == 0) {
+					time->day_of_month = days_in_month;
 				}
 			} break;
 			case focused_month: {
 				time->month += offset;
 				if (time->month > MONTHS_PER_YEAR) {
-					time->month = offset > 0 ? 0 : MONTHS_PER_YEAR - 1;
+					time->month = 1;
+				} else if (time->month == 0) {
+					time->month = MONTHS_PER_YEAR;
 				}
 			} break;
 			case focused_year: {
